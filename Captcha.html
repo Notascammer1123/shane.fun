@@ -1,0 +1,68 @@
+Captcha
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rotation CAPTCHA</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+        .container { display: inline-block; text-align: center; }
+        .captcha-box { border: 2px solid #000; padding: 20px; display: inline-block; }
+        .rotation-box { font-size: 50px; display: inline-block; transition: transform 0.3s ease; width: 50px; height: 50px; line-height: 50px; text-align: center; }
+        .buttons { margin-top: 20px; }
+        button { font-size: 20px; margin: 10px; padding: 10px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Rotation CAPTCHA</h1>
+    <p>Rotate the object to match the correct angle</p>
+    
+    <div class="container">
+        <div class="captcha-box">
+            <p>Target Angle: <span id="targetAngle">0</span>°</p>
+            <div id="object" class="rotation-box" style="transform-origin: center;">🐸</div>
+            <div class="buttons">
+                <button onclick="rotateLeft()">⬅️ Rotate Left</button>
+                <button onclick="rotateRight()">➡️ Rotate Right</button>
+            </div>
+            <button onclick="checkCaptcha()">Submit</button>
+            <p id="result"></p>
+        </div>
+    </div>
+    
+    <script>
+        function getRandomTargetAngle() {
+            let angles = [0, 45, 90, 135, 180, 225, 270, 315, 360];
+            return angles[Math.floor(Math.random() * angles.length)];
+        }
+        
+        let targetAngle = getRandomTargetAngle();
+        let currentAngle = 0;
+        document.getElementById("targetAngle").innerText = targetAngle;
+        
+        function rotateLeft() {
+            currentAngle -= 15;
+            updateRotation();
+        }
+        
+        function rotateRight() {
+            currentAngle += 15;
+            updateRotation();
+        }
+        
+        function updateRotation() {
+            document.getElementById("object").style.transform = `rotate(${currentAngle}deg)`;
+        }
+        
+        function checkCaptcha() {
+            let difference = Math.abs(targetAngle - (currentAngle % 360));
+            if (difference <= 10 || difference >= 350) {
+                document.getElementById("result").innerText = "✅ CAPTCHA Passed!";
+            } else {
+                document.getElementById("result").innerText = "❌ Try Again!";
+            }
+        }
+    </script>
+</body>
+</html>

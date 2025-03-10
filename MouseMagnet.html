@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cursor Magnetization</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: black;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+            cursor: none;
+        }
+        canvas {
+            display: none;
+        }
+        #addButton {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            font-size: 24px;
+            background-color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 5px;
+            display: none;
+        }
+        #startScreen {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div id="startScreen">
+    <h1>Mouse Magnet</h1>
+    <p>Click on the page to start!</p>
+</div>
+<canvas id="magnetCanvas"></canvas>
+<button id="addButton">Add More Metal</button>
+<script>
+    const canvas = document.getElementById('magnetCanvas');
+    const ctx = canvas.getContext('2d');
+    const addButton = document.getElementById('addButton');
+    const startScreen = document.getElementById('startScreen');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const objects = [];
+    const CURSOR_STRENGTH = 0.03;
+    const GRAVITY = 0.05;
+    const FRICTION = 0.98;
+    let cursor = { x: null, y: null, active: false };
+    let attractMode = true;
+    let gameStarted = false;
+
+    class Magnet {
+        constructor(x, y) {
+            this.x = x;
+            this.y = y;
+            this.vx = (Math.random() - 0.5) * 2;
+            this.vy = (Math.random() - 0.5) * 2;
+            this.width = 30;
+            this.height = 10;
+            this.angle = 0;
+        }
+
+        update() {
+            if (cursor.active) {
+                const dx = cursor.x - this.x;
+                const dy = cursor.y - this.y;
+                const distance = Math.sqrt(dx * dx + dy * dy) || 1;
+                const force = (attractMode ? 1 : -0.2) * CURSOR_STRENGTH / (distance * 0.05);
+
+                this.vx += dx * force;
+                this.vy += dy * force;
+
+                if (!attractMode) {
+                    this.angle = Math.atan2(dy, dx);
+                }
+            }
+
+            if (!attractMode) this.vy += GRAVITY;
+
+            this.x += this.vx;
+            this.y += this.vy;
+
+            this.vx *= FRICTION;
+            this.vy *= FRICTION;
+
+            if (this.y + this.height > canvas.height) {
+                this.y = canvas.height - this.height;
+                this.vy *= -0.8;
+            }
+            if (this.y < 0) {
+                this.y = 0;
+                this.vy *= -0.8;
+            }
+            if (this.x + this.width > canvas.width) {
+                this.x = canvas.width - this.width;
+                this.vx *= -0.8;
+            }
+            if (this.x < 0) {
+                this.x = 0;
+                this.vx *= -0.8;
+            }
+        }
+
+        draw() {
+            ctx.save();
+            ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
+            ctx.rotate(this.angle);
+            ctx.translate(-this.width / 2, -this.height / 2);
+
+            ctx.beginPath();
+            ctx.rect(0, 0, this.width / 2, this.height);
+            ctx.fillStyle = 'blue';
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.rect(this.width / 2, 0, this.width / 2, this.height);
+            ctx.fillStyle = 'red';
+            ctx.fill();
+
+            ctx.restore();
+        }
+    }
+
+    function drawCursor() {
+        ctx.beginPath();
+        ctx.arc(cursor.x, cursor.y, 5, 0, Math.PI * 2);
+        ctx.fillStyle = attractMode ? 'red' : 'blue';
+        ctx.fill();
+    }
+
+    function spawnObjects(amount) {
+        for (let i = 0; i < amount; i++) {
+            objects.push(new Magnet(Math.random() * canvas.width, Math.random() * canvas.height));
+        }
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        objects.forEach(obj => {
+            obj.update();
+            obj.draw();
+        });
+
+        if (cursor.active) drawCursor();
+
+        requestAnimationFrame(animate);
+    }
+
+    window.addEventListener('mousemove', (e) => {
+        cursor.x = e.clientX;
+        cursor.y = e.clientY;
+        cursor.active = true;
+    });
+
+    window.addEventListener('keydown', (e) => {
+        if (e.code === 'Space' && gameStarted) {
+            attractMode = !attractMode;
+            if (!attractMode) {
+                objects.forEach(obj => {
+                    obj.vx += (Math.random() - 0.5) * 5;
+                    obj.vy -= Math.random() * 5;
+                });
+            }
+        }
+    });
+
+    window.addEventListener('click', () => {
+        if (!gameStarted) {
+            gameStarted = true;
+            startScreen.style.display = 'none';
+            canvas.style.display = 'block';
+            addButton.style.display = 'block';
+            spawnObjects(20);
+            animate();
+        }
+    });
+
+    addButton.addEventListener('click', () => {
+        spawnObjects(10);
+    });
+</script>
+</body>
+</html>

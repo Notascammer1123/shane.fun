@@ -1,0 +1,84 @@
+Deep Sea
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep Sea Explorer</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background-color: #001f3f; color: white; overflow-y: scroll; height: 12000px; }
+        .ocean { position: relative; width: 100vw; height: 12000px; }
+        .submarine { position: fixed; left: 50%; top: 10%; transform: translateX(-50%); font-size: 50px; }
+        .depth { position: fixed; top: 10px; left: 10px; font-size: 20px; }
+        .creature { position: absolute; font-size: 30px; text-align: left; width: 300px; }
+        .rock { position: absolute; font-size: 25px; color: gray; }
+        .go-top { position: fixed; bottom: 20px; right: 20px; padding: 10px 20px; background: #ffcc00; color: black; border: none; cursor: pointer; font-size: 16px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="depth">Depth: <span id="depth">0</span>m</div>
+    <div class="ocean" id="ocean">
+        <div class="submarine" id="submarine">🚢</div>
+        
+        <!-- Ocean Creatures in ascending order by depth -->
+        <div class="creature" style="top: 550px; left: 40%;">🐡 Pufferfish - 300m<br>"Inflates when startled. Wish my bank account did the same."</div>
+        <div class="creature" style="top: 800px; left: 60%;">🐟 Tuna - 400m<br>"The ocean's speedster. Can outrun your WiFi signal."</div>
+        <div class="creature" style="top: 1699px; left: 30%">🦞 Lobster - 900m<br>"Technically immortal. Too bad it tastes too good to find out."</div>
+        <div class="creature" style="top: 1900px; left: 50%">🦑 Squid - 1000m<br>"A master of disguise. Probably a secret agent."</div>
+        <div class="creature" style="top: 2150px; left: 70%">🐊 Crocodile Icefish - 1200m<br>"Lives in freezing waters. Probably the chillest dude down here."</div>
+        <div class="creature" style="top: 2900px; left: 40%">🐠 Anglerfish - 1600m<br>"Carries its own headlamp. Saves a fortune on electricity."</div>
+        <div class="creature" style="top: 3800px; left: 50%">🐙 Octopus - 2000m<br>"Eight arms, zero problems. Can multitask better than you."</div>
+        <div class="creature" style="top: 4000px; left: 30%">🐋 Sperm Whale - 2200m<br>"Can hold its breath for 90 minutes. Bet you can't."</div>
+        <div class="creature" style="top: 4530px; left: 70%">🦀 Giant Isopod - 2500m<br>"Basically an underwater cockroach. Nightmares are real."</div>
+        <div class="creature" style="top: 6705px; left: 50%">🦈 Shark - 3700m<br>"Has been around longer than trees. Basically an ancient warrior."</div>
+        
+        <!-- Tiny Deep-Sea Creatures -->
+        <div class="creature" style="top: 7300px; left: 40%">🦠 Nanoarchaeum equitans - 4000m<br>"So tiny it lives on another microbe. The ultimate hitchhiker."</div>
+        <div class="creature" style="top: 7990px; left: 60%">🐚 Halystina globulus - 4500m<br>"A snail so small, it makes ants look big."</div>
+        <div class="creature" style="top: 9000px; left: 30%">🦠 Deep-Sea Plankton - 5000m<br>"Drifts around aimlessly. Basically the ocean's version of a couch potato."</div>
+        
+        <!-- Mariana Trench -->
+        <div class="creature" style="top: 20000px; left: 50%">🌊 Mariana Trench - 11000m<br>"Wow, you reached the end! Time to head back up!"</div>
+        
+        <!-- Rocks and Barnacles (Continuous) -->
+        <script>
+            let ocean = document.getElementById("ocean");
+            for (let i = 400; i < 12000; i += 500) {
+                let rockLeft = document.createElement("div");
+                rockLeft.className = "rock";
+                rockLeft.innerText = "🪨";
+                rockLeft.style.top = `${i}px`;
+                rockLeft.style.left = "5%";
+                ocean.appendChild(rockLeft);
+
+                let rockRight = document.createElement("div");
+                rockRight.className = "rock";
+                rockRight.innerText = "🪨";
+                rockRight.style.top = `${i}px`;
+                rockRight.style.left = "90%";
+                ocean.appendChild(rockRight);
+
+                if (Math.random() < 0.3) {
+                    let barnacle = document.createElement("div");
+                    barnacle.className = "rock";
+                    barnacle.innerText = "🦪";
+                    barnacle.style.top = `${i + 250}px`;
+                    barnacle.style.left = Math.random() < 0.5 ? "5%" : "90%";
+                    ocean.appendChild(barnacle);
+                }
+            }
+        </script>
+    </div>
+    
+    <button class="go-top" onclick="window.scrollTo({ top: 0, behavior: 'smooth' });">Go to Top</button>
+    
+    <script>
+        let depthDisplay = document.getElementById("depth");
+
+        window.addEventListener("scroll", function() {
+            let depth = Math.floor(window.scrollY / 1.8);
+            depthDisplay.innerText = depth + "m";
+        });
+    </script>
+</body>
+</html>
