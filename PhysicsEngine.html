@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhysicsEngine</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: white;
+        }
+        canvas {
+            display: block;
+        }
+        #menu {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 200px;
+            height: 100%;
+            background-color: #333;
+            color: white;
+            padding: 10px;
+            display: none;
+            overflow-y: auto;
+            text-align: center;
+        }
+        #toggleMenu {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px;
+            background-color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #closeMenu {
+            position: fixed;
+            top: 20px;
+            right: 230px;
+            padding: 10px;
+            background-color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: none;
+        }
+        #clearAll {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 10px;
+            background-color: red;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .menu-item {
+            margin-bottom: 20px;
+            cursor: pointer;
+        }
+        .menu-item img {
+            width: 150px;
+            height: 150px;
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+<button id="toggleMenu">☰</button>
+<button id="closeMenu">✖</button>
+<button id="clearAll">Clear All</button>
+<div id="menu">
+    <div class="menu-item" data-img="https://cdn-icons-png.flaticon.com/512/2670/2670296.png">
+        <img src="https://cdn-icons-png.flaticon.com/512/2670/2670296.png" alt="Anvil">
+    </div>
+    <div class="menu-item" data-img="🔴">
+        <span style="font-size: 80px;">🔴</span>
+    </div>
+    <div class="menu-item" data-img="🪶">
+        <span style="font-size: 80px;">🪶</span>
+    </div>
+</div>
+<canvas id="gravityCanvas"></canvas>
+<script>
+    const canvas = document.getElementById('gravityCanvas');
+    const ctx = canvas.getContext('2d');
+    const menu = document.getElementById('menu');
+    const toggleMenu = document.getElementById('toggleMenu');
+    const closeMenu = document.getElementById('closeMenu');
+    const clearAllButton = document.getElementById('clearAll');
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const GRAVITY = 0.3;
+    const FEATHER_GRAVITY = 0.05;
+    const COLLISION_DAMPING = 0.2;
+    const BOUNCE_DAMPING = 0.8;
+    const objects = [];
+    let heldObject = null;
+
+    class GravityObject {
+        constructor(x, y, imgSrc, isBouncy = false, isFeather = false) {
+            this.x = x;
+            this.y = y;
+            this.vx = 0;
+            this.vy = 0;
+            this.size = isFeather ? 50 : (isBouncy ? 80 : 200); 
+            this.imgSrc = imgSrc;
+            this.isBouncy = isBouncy;
+            this.isFeather = isFeather;
+            this.image = new Image();
+            if (imgSrc !== '🔴' && imgSrc !== '🪶') this.image.src = imgSrc;
+        }
+
+        update() {
+            if (heldObject !== this) {
+                this.vy += this.isFeather ? FEATHER_GRAVITY : GRAVITY;
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.y + this.size > canvas.height) {
+                    this.y = canvas.height - this.size;
+                    this.vy = this.isFeather ? 0 : (this.isBouncy ? -this.vy * BOUNCE_DAMPING : 0);
+                }
+
+                this.checkCollision();
+            }
+        }
+
+        checkCollision() {
+            objects.forEach(obj => {
+                if (obj === this || obj.isFeather) return;
+
+                if (this.x < obj.x + obj.size && this.x + this.size > obj.x && this.y + this.size > obj.y && this.y < obj.y + obj.size) {
+                    if (this.vy > 0) {
+                        this.vy = this.isBouncy ? -this.vy * BOUNCE_DAMPING : 0;
+                        this.y = obj.y - this.size;
+                    }
+                }
+            });
+        }
+
+        draw() {
+            if (this.imgSrc === '🔴' || this.imgSrc === '🪶') {
+                ctx.font = `${this.size}px serif`;
+                ctx.fillText(this.imgSrc, this.x, this.y + this.size);
+            } else {
+                ctx.drawImage(this.image, this.x, this.y, this.size, this.size);
+            }
+        }
+
+        isMouseOver(mx, my) {
+            return mx > this.x && mx < this.x + this.size && my > this.y && my < this.y + this.size;
+        }
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        objects.forEach(obj => {
+            obj.update();
+            obj.draw();
+        });
+        requestAnimationFrame(animate);
+    }
+
+    window.addEventListener('mousedown', (e) => {
+        objects.forEach(obj => {
+            if (obj.isMouseOver(e.clientX, e.clientY)) {
+                heldObject = obj;
+            }
+        });
+    });
+
+    window.addEventListener('mousemove', (e) => {
+        if (heldObject) {
+            heldObject.x = e.clientX - heldObject.size / 2;
+            heldObject.y = e.clientY - heldObject.size / 2;
+            heldObject.vx = 0;
+            heldObject.vy = 0;
+        }
+    });
+
+    window.addEventListener('mouseup', () => heldObject = null);
+
+    clearAllButton.addEventListener('click', () => objects.length = 0);
+
+    toggleMenu.addEventListener('click', () => {
+        menu.style.display = 'block';
+        closeMenu.style.display = 'block';
+    });
+
+    closeMenu.addEventListener('click', () => {
+        menu.style.display = 'none';
+        closeMenu.style.display = 'none';
+    });
+
+    document.querySelectorAll('.menu-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const imgSrc = item.getAttribute('data-img');
+            const isBouncy = imgSrc === '🔴';
+            const isFeather = imgSrc === '🪶';
+            const newObject = new GravityObject(canvas.width / 2 - 100, 100, imgSrc, isBouncy, isFeather);
+            objects.push(newObject);
+        });
+    });
+
+    animate();
+</script>
+</body>
+</html>

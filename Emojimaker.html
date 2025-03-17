@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Emoji Maker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            height: 100vh;
+            margin: 0;
+        }
+        #panel {
+            width: 35%;
+            background-color: #f0f0f0;
+            padding: 10px;
+            overflow-y: auto;
+        }
+        #stage {
+            width: 65%;
+            background-color: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+        img {
+            width: 100px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        #trash {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            font-size: 50px;
+            cursor: pointer;
+        }
+        #controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+        .control-button {
+            font-size: 24px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            user-select: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="panel">
+        <div>
+            <h4>Eyes</h4>
+            <img src="https://creazilla-store.fra1.digitaloceanspaces.com/emojis/48985/eyes-emoji-clipart-md.png" draggable="false">
+<br>
+<img src="Picwo.png" draggable="false">
+<br>
+<img src="https://www.pinclipart.com/picdir/big/12-123387_circle-clipart-light-brown-circle-png-download.png" draggable="false">
+<br>
+<img src="gee.png" draggable="false">
+        </div>
+        <div>
+            <h4>Face Shape</h4>
+            <img src="https://i.imgflip.com/8bztqc.png" draggable="false">
+            <br>  
+          <img src="Picno.png" draggable="false">
+<br>
+<img src="wow.png" draggable="false">
+<br>
+<img src="pag.png" draggable="false">
+<br>
+<img src="https://static-00.iconduck.com/assets.00/robot-face-emoji-1024x1024-3vjk5zsf.png" draggable="false">
+
+
+        </div>
+        <div>
+            <h4>Hair</h4>
+            <img src="Picyo.png" draggable="false">
+          <br>
+          <img src="Picye.png" draggable="false">
+          <br>
+          <img src="Picne.png" draggable="false">
+<br>
+          <img src="Picwa.png" draggable="false">
+<br>
+          <img src="hair.png" draggable="false">
+
+        </div>
+        <div>
+            <h4>Accessories</h4>
+            <img src="https://whatemoji.org/wp-content/uploads/2020/07/Sunglasses-Emoji.png" draggable="false">
+<br>
+            <img src="https://creazilla-store.fra1.digitaloceanspaces.com/emojis/55534/glasses-emoji-clipart-md.png" draggable="false">
+<br>
+            <img src="Picxi.png" draggable="false">
+	<br>
+	<img src="non.png" draggable="false">
+<br>
+<img src="http://www.clipartbest.com/cliparts/9ip/xMB/9ipxMBd9T.png" draggable="false">
+<br>
+<img src="https://clipartcraft.com/images/circle-clipart-pink-14.png" draggable="false">
+<br>
+<img src="glass.png" draggable="false">
+<br>
+<img src="https://attic.sh/fs0reh6oe3pa611c8cbae0kwvq5r" draggable="false">
+<br>
+<img src="indian-flag.png" draggable="false">
+<br>
+<img src="https://static-00.iconduck.com/assets.00/cricket-bat-and-ball-emoji-1017x1024-23djecro.png" draggable="false">
+<br>
+<img src="bot.png" draggable="false">
+
+        </div>
+        <div>
+ <h4>Hand</h4>
+            <img src="https://whatemoji.org/wp-content/uploads/2020/07/Raised-Hand-Emoji-1024x1024.png" draggable="false">
+<br>
+<img src="Hand2.png" draggable="false">
+<br>
+<img src="https://whatemoji.org/wp-content/uploads/2020/07/Raised-Fist-Emoji-1080x1080.png" draggable="false">
+<br>
+<img src="3.png" draggable="false">
+<br>
+<img src="Picpog.png" draggable="false">
+<br>
+<img src="https://em-content.zobj.net/source/skype/289/mechanical-arm_1f9be.png" draggable="false">
+<br>
+<img src="balls.png" draggable="false">
+<br>
+<img src="self.png" draggable="false">
+<br>
+<img src="selfr.png" draggable="false">
+
+    </div>
+        <div>        
+<h4>Hat</h4>
+            <img src="https://whatemoji.org/wp-content/uploads/2020/07/Top-Hat-Emoji.png" draggable="false">
+<br>
+<img src="https://media1.popsugar-assets.com/files/thumbor/yPYsRMrlambUJIXqANkp08YIW9g/fit-in/1024x1024/filters:format_auto-!!-:strip_icc-!!-/2017/10/06/688/n/38761221/39211ab177b3ac94_hat/i/Hat.png" draggable="false">
+        </div>
+        <div>
+            <h4>Mouth</h4>
+            <img src="https://clipartix.com/wp-content/uploads/2016/08/Smile-lips-smiling-transparent-background-clipart-clipart-kid.png" draggable="false">
+<br>            
+<img src="http://cdn.shopify.com/s/files/1/1061/1924/products/Lips_Emoji_grande.png?v=1480481040" draggable="false">
+<br>
+<img src="https://whatemoji.org/wp-content/uploads/2020/07/Tongue-Emoji.png" draggable="false">
+<br>
+<img src="https://webstockreview.net/images/line-vector-png-6.png" draggable="false">
+<br>
+<img src="poggers.png" draggable="false">
+<br>
+<img src="slightlylesspof.png" draggable="false">
+<br>
+<img src="https://ouch-cdn2.icons8.com/HzcvdUqu7yzUtsML-B_nRs7tkPMnTxY4Q0_NNB5HD88/rs:fit:4560:912/czM6Ly9pY29uczgu/b3VjaC1wcm9kLmFz/c2V0cy9zdmcvOTA2/L2UyMDg0OWI0LWEw/MTAtNDg3ZS1hOTcy/LTg5NWZjNmM0NTRi/Zi5zdmc.png" draggable="false">
+<br>
+<img src="chain.png" draggable="false">
+<br>
+
+
+
+
+
+
+        </div>
+    </div>
+
+    <div id="stage">
+        <div id="trash">🗑️</div>
+        <div id="controls">
+            <div id="increase" class="control-button">+</div>
+            <div id="decrease" class="control-button">-</div>
+        </div>
+    </div>
+
+    <!-- Download Button -->
+    <button id="downloadButton" style="position: fixed; right: 20px; top: 50%; transform: translateY(-50%); background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">Download Emoji</button>
+
+    <script>
+        const stage = document.getElementById('stage');
+        const trash = document.getElementById('trash');
+        const increase = document.getElementById('increase');
+        const decrease = document.getElementById('decrease');
+        const allItems = [];
+        let draggedImg = null;
+        let shiftX, shiftY;
+
+        function enableDragging(img) {
+            img.addEventListener('mousedown', event => {
+                event.preventDefault();
+                draggedImg = img;
+                shiftX = event.clientX - img.getBoundingClientRect().left;
+                shiftY = event.clientY - img.getBoundingClientRect().top;
+
+                document.addEventListener('mousemove', onMouseMove);
+
+                document.onmouseup = function() {
+                    document.removeEventListener('mousemove', onMouseMove);
+                    document.onmouseup = null;
+
+                    if (isOverTrash(draggedImg)) {
+                        draggedImg.remove();
+                        allItems.splice(allItems.indexOf(draggedImg), 1);
+                    }
+                };
+            });
+
+            function onMouseMove(event) {
+                if (draggedImg) {
+                    draggedImg.style.left = event.clientX - shiftX - stage.offsetLeft + 'px';
+                    draggedImg.style.top = event.clientY - shiftY - stage.offsetTop + 'px';
+                }
+            }
+        }
+
+        function isOverTrash(img) {
+            const imgRect = img.getBoundingClientRect();
+            const trashRect = trash.getBoundingClientRect();
+
+            return (
+                imgRect.right > trashRect.left &&
+                imgRect.left < trashRect.right &&
+                imgRect.bottom > trashRect.top &&
+                imgRect.top < trashRect.bottom
+            );
+        }
+
+        document.querySelectorAll('#panel img').forEach(img => {
+            img.addEventListener('mousedown', event => {
+                event.preventDefault();
+                const newImg = event.target.cloneNode(true);
+                newImg.style.position = 'absolute';
+                newImg.style.width = '200px';
+                newImg.style.cursor = 'grab';
+
+                document.body.appendChild(newImg);
+                shiftX = event.clientX - newImg.width / 2;
+                shiftY = event.clientY - newImg.height / 2;
+                moveAt(event.pageX, event.pageY);
+
+                function moveAt(pageX, pageY) {
+                    newImg.style.left = pageX - shiftX + 'px';
+                    newImg.style.top = pageY - shiftY + 'px';
+                }
+
+                function onMouseMove(event) {
+                    moveAt(event.pageX, event.pageY);
+                }
+
+                document.addEventListener('mousemove', onMouseMove);
+
+                document.onmouseup = function(event) {
+                    document.removeEventListener('mousemove', onMouseMove);
+                    document.onmouseup = null;
+
+                    if (event.clientX > stage.offsetLeft && event.clientX < stage.offsetLeft + stage.offsetWidth &&
+                        event.clientY > stage.offsetTop && event.clientY < stage.offsetTop + stage.offsetHeight) {
+
+                        newImg.style.left = (event.clientX - stage.offsetLeft - 100) + 'px';
+                        newImg.style.top = (event.clientY - stage.offsetTop - 100) + 'px';
+                        stage.appendChild(newImg);
+                        allItems.push(newImg);
+                        enableDragging(newImg);
+                    } else {
+                        newImg.remove();
+                    }
+                };
+            });
+        });
+
+        increase.addEventListener('click', () => {
+            if (draggedImg) draggedImg.style.width = (parseInt(draggedImg.style.width) + 20) + 'px';
+        });
+
+        decrease.addEventListener('click', () => {
+            if (draggedImg) draggedImg.style.width = Math.max(20, parseInt(draggedImg.style.width) - 20) + 'px';
+        });
+
+        trash.addEventListener('click', () => {
+            allItems.forEach(item => item.remove());
+            allItems.length = 0;
+        });
+
+        function downloadEmoji() {
+            html2canvas(stage).then(canvas => {
+                const link = document.createElement('a');
+                link.href = canvas.toDataURL('image/png');
+                link.download = 'emoji.png';
+                link.click();
+            });
+        }
+
+        document.getElementById('downloadButton').addEventListener('click', downloadEmoji);
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</body>
+</html>

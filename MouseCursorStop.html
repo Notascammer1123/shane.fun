@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cursor Stamina</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: white;
+            transition: background 1s;
+            font-size: 24px;
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+        #content {
+            width: 60%;
+            text-align: center;
+            display: none;
+        }
+        #nextButton {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 10px 20px;
+            font-size: 18px;
+            background: blue;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #staminaBar {
+            position: absolute;
+            width: 100px;
+            height: 10px;
+            background: gray;
+            border-radius: 5px;
+            overflow: hidden;
+            display: none;
+        }
+        #stamina {
+            height: 100%;
+            background: green;
+            width: 100%;
+            transition: width 0.1s linear;
+        }
+        #warningText {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            font-weight: bold;
+            color: red;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="staminaBar"><div id="stamina"></div></div>
+    <div id="warningText">YOU RAN OUT OF ENERGY</div>
+    <div id="content">
+        <h2>The Unfinished Letter</h2>
+        <p id="storyText"></p>
+    </div>
+    <button id="nextButton">Next</button>
+    <script>
+        const storyParagraphs = [
+            "Jonathan always loved exploring antique stores, but he never expected to find something truly mysterious. On a rainy afternoon, he wandered into an old shop tucked between two modern buildings. The scent of aged paper and polished wood filled the air.",
+            "As he browsed, his fingers brushed against a dusty wooden box. Inside, wrapped in delicate silk, was an old, unopened letter. The wax seal was still intact, bearing the initials 'E.R.' Curious, he brought it to the shopkeeper.",
+            "'Ah,' the old man behind the counter muttered. 'That letter has been here for as long as I can remember. No one has dared to open it.'",
+            "Jonathan hesitated. What if it was personal? What if it was important? But his curiosity got the better of him. He carefully broke the seal and unfolded the yellowed paper. The ink was slightly faded but still legible.",
+            "<em>Dearest Evelyn, By the time you read this, I will be far away. But know that my heart remains with you. Meet me at the old lighthouse at midnight. I will wait for you.</em>",
+            "There was no signature. No date. Just a plea frozen in time.",
+            "Jonathan's heart raced. Who wrote this? Did Evelyn ever receive it? And more importantly... was the sender still waiting?",
+            "That night, despite the storm, he drove to the abandoned lighthouse on the coast. The structure stood tall, its paint peeling, its light long extinguished. As he stepped inside, the wind howled through the cracks. And then, he saw it.",
+            "A single lantern, flickering in the darkness.",
+            "Waiting."
+        ];
+        
+        let currentParagraph = 0;
+        const storyText = document.getElementById("storyText");
+        const nextButton = document.getElementById("nextButton");
+        const contentDiv = document.getElementById("content");
+        const staminaBar = document.getElementById("staminaBar");
+        const staminaFill = document.getElementById("stamina");
+        const warningText = document.getElementById("warningText");
+        let stamina = 100;
+        let isResting = false;
+        let regenInterval;
+
+        function startRegen() {
+            clearInterval(regenInterval);
+            regenInterval = setInterval(() => {
+                if (stamina < 100) {
+                    stamina += 0.2;
+                    staminaFill.style.width = stamina + '%';
+                } else {
+                    clearInterval(regenInterval);
+                }
+            }, 100);
+        }
+        
+        function showNextParagraph() {
+            if (currentParagraph === 0) {
+                contentDiv.style.display = "block";
+            }
+            
+            if (currentParagraph < storyParagraphs.length) {
+                storyText.innerHTML = storyParagraphs[currentParagraph];
+                currentParagraph++;
+            }
+            
+            if (currentParagraph === storyParagraphs.length) {
+                nextButton.style.display = "none";
+            }
+        }
+        
+        nextButton.addEventListener("click", showNextParagraph);
+        showNextParagraph();
+        
+        document.addEventListener('mousemove', (event) => {
+            if (isResting) return;
+            staminaBar.style.display = 'block';
+            staminaBar.style.left = `${event.clientX + 15}px`;
+            staminaBar.style.top = `${event.clientY + 15}px`;
+            stamina -= 1.0;
+            staminaFill.style.width = stamina + '%';
+            
+            if (stamina < 100 && !isResting) {
+                startRegen();
+            }
+            
+            if (stamina <= 0) {
+                stamina = 0;
+                isResting = true;
+                document.body.style.background = 'black';
+                warningText.style.display = 'block';
+                nextButton.style.display = 'none';
+                clearInterval(regenInterval);
+                setTimeout(() => {
+                    document.body.style.background = 'white';
+                    warningText.style.display = 'none';
+                    nextButton.style.display = 'block';
+                    stamina = 100;
+                    isResting = false;
+                    staminaFill.style.width = stamina + '%';
+                }, 2000);
+            }
+        });
+    </script>
+</body>
+</html>
