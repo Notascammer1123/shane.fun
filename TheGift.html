@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>The Gift</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        #present {
+            width: 150px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        #present:hover {
+            transform: scale(1.05);
+        }
+        #itemsList {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            max-width: 300px;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            cursor: pointer;
+            user-select: none;
+        }
+        #itemListContainer {
+            display: none;
+            margin-top: 10px;
+        }
+        .item-count {
+            margin-left: 5px;
+            color: gray;
+        }
+        #infoTablet {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            display: none;
+            max-width: 400px;
+        }
+        #infoTablet img {
+            max-width: 100%;
+        }
+    </style>
+</head>
+<body>
+<img src="chances.png" alt="Mini Map" style="position: fixed; top: 40px; right: 40px; width: 400px; height: 220px; border: 2px solid #333; border-radius: 8px;">
+
+
+    <img id="present" src="https://static-00.iconduck.com/assets.00/wrapped-gift-emoji-1901x2048-ofaqfzeh.png" alt="Present">
+    <div id="itemsList"><strong>Collected Items:</strong><div id="itemListContainer"><ul id="itemList"></ul></div></div>
+    <div id="infoTablet"></div>
+
+    <script>
+let isOnCooldown = false;
+        const items = [
+            { name: 'Nothing', chance: 30, image: `Nothing.png`, joke: "You opened nothing. Congratulations, you now own infinite air." },
+            { name: 'Bean', chance: 10, image: `https://www.pngkey.com/png/full/100-1007711_bean-clipart-blue-red-bean-clip-art.png`, joke: "It's just a bean. Unless..." },
+            { name: 'Godly Bean', chance: 0.25, image: `Bean.png`, joke: "The bean of legends. Use it wisely." },
+            { name: 'Poop', chance: 10, image: `https://static-00.iconduck.com/assets.00/face-base-poop-emoji-2006x2048-plxclnym.png`, joke: "Ew. Just... ew." },
+            { name: 'Gold Poop', chance: 0.5, image: `Goldp.png`, joke: "What a rare treasure! It's worth its weight in disgust." },
+            { name: 'Pokemon Card', chance: 30, image: [`https://relentlessdragon.com/wp-content/uploads/2019/10/Charizard-Legendary-Collection3.jpg`, `https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS8VOGUTsy4wLpgPdG9wFyYQVcVEUpNmubpEA&s`, `https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT_Wob1WVmVNwUdI7odESUoWInpLBc4USKDZw&s`], joke: "A piece of cardboard that could be worth more than your house." },
+            { name: 'Rare Pokemon Card', chance: 2, image: `https://w7.pngwing.com/pngs/578/379/png-transparent-gyarados-pokemon-tcg-online-pokemon-trading-card-game-playing-card-pokemon-game-pokemon-action-figure-thumbnail.png`, joke: "Now THIS is a flex." },
+            { name: 'PSA 10 Charizard', chance: 0.2, image: `https://media.karousell.com/media/photos/products/2021/7/24/psa_10_japanese_20th_anniversa_1627135312_e61f7cb1_progressive.jpg`, joke: "Mint condition! Keep it away from your dog." },
+            { name: 'PSA 10 Gold Plated Charizard', chance: 0.1, image: `charizard.png`, joke: "So shiny it hurts your eyes." },
+            { name: 'Toy', chance: 5, image: `https://fatcatcollectibles.in/cdn/shop/files/HOTMMS746.png?v=1728110592&width=2048`, joke: "For the inner child in you." },
+            { name: 'iPhone', chance: 10, image: `Mephone.png`, joke: "You got a phone! But it's still not the Omega version." },
+            { name: 'iPhone Omega++ Pro Max Ultra 26 5G+', chance: 0.5, image: `Omega.png`, joke: "The absolute pinnacle of excessive technology." },
+            { name: 'Jar o" Air', chance: 0.5, image: `Jar.png`, joke: "Now you have nothing IN a jar!" },
+            { name: 'Gold Bar', chance: 1, image: `https://aaah0mnbncqtinas.public.blob.vercel-storage.com/Z4JNSgO8Xl-no-background-n0ClG0NAfUNmi64gjmoIY9HeabAnOz.png
+`, joke: "Do that telephone people do with gold bars." },
+            { name: 'Toilet', chance: 0.5, image: `https://aaah0mnbncqtinas.public.blob.vercel-storage.com/Av2IeV4rhY-no-background-4thxuPOL786Wxm2TrRM0ZkJnzAZa4u.png
+`, joke: "Nice! You found something... just like discovering an toilet paper roll when you need it most" },
+            { name: 'Le Golden Toilet', chance: 0.1, image: `goto.png`, joke: "Wow, you've hit the jackpot! But it's not exactly a royal flush... Get it?" },
+            { name: 'Skibidi Toilet🤮', chance: 0.05, image: `https://media.tenor.com/cwubAnd8gN4AAAAi/skibidi-skibidi-toilet.gif
+`, joke: "You got the RAREST item in the game! Careful, prolonged exposure may cause severe brain rot and uncontrollable urge to hum that cursed tune." },
+
+
+
+        ];
+
+        const inventory = {};
+
+        function openPresent() {
+            let random = Math.random() * 100;
+            let cumulative = 0;
+            let selectedItem;
+
+            for (const item of items) {
+                cumulative += item.chance;
+                if (random < cumulative) {
+                    selectedItem = item;
+                    break;
+                }
+            }
+
+            if (selectedItem) {
+                if (!inventory[selectedItem.name]) {
+                    inventory[selectedItem.name] = { count: 0, image: selectedItem.image, joke: selectedItem.joke };
+                }
+                inventory[selectedItem.name].count++;
+                updateInventoryList();
+            }
+        }
+
+        function updateInventoryList() {
+            const itemList = document.getElementById('itemList');
+            itemList.innerHTML = '';
+
+            for (const [name, data] of Object.entries(inventory)) {
+                const listItem = document.createElement('li');
+                const count = data.count > 1 ? `<span class="item-count">x${data.count}</span>` : '';
+                const image = Array.isArray(data.image) ? data.image[0] : data.image;
+                listItem.innerHTML = `<img src="${image}" alt="${name}" width="50"> ${name} ${count}`;
+                listItem.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showInfo(name, image, data.joke);
+                });
+                itemList.appendChild(listItem);
+            }
+        }
+
+        function showInfo(name, image, joke) {
+            const tablet = document.getElementById('infoTablet');
+            tablet.innerHTML = `<h2>${name}</h2><img src="${image}" alt="${name}"><p>Chance to get: ${items.find(i => i.name === name).chance}%</p><p>${joke}</p>`;
+            tablet.style.display = 'block';
+        }
+
+        document.addEventListener('click', (event) => {
+            if (!event.target.closest('#infoTablet') && !event.target.closest('li')) {
+                document.getElementById('infoTablet').style.display = 'none';
+            }
+        });
+
+        document.getElementById('present').addEventListener('click', openPresent);
+
+        document.getElementById('itemsList').addEventListener('click', () => {
+            const itemListContainer = document.getElementById('itemListContainer');
+            itemListContainer.style.display = itemListContainer.style.display === 'none' ? 'block' : 'none';
+        });
+    </script>
+</body>
+</html>
