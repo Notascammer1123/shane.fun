@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" href="Simon.png" type="image/png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Grid Puzzle</title>
+    <style>
+        body {
+            font-family: "Comic Sans MS", cursive, sans-serif;
+            background: url('https://images.hdqwalls.com/download/triangles-colorful-background-nz-1920x1080.jpg') no-repeat center center fixed;
+            background-size: cover;
+            background-color: rgba(255, 255, 255, 0.6);
+            background-blend-mode: overlay;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .game-container {
+            text-align: center;
+            width: 300px;
+            margin-top: 50px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 70px);
+            grid-template-rows: repeat(4, 70px);
+            gap: 10px;
+            justify-content: center;
+            margin: 0 auto;
+        }
+
+        .card {
+            width: 70px;
+            height: 70px;
+            background-color: #fff;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transform: scale(1);
+            transition: transform 0.3s ease;
+        }
+
+        .card.flipped {
+            background-color: #f4f4f4;
+            pointer-events: none;
+        }
+
+        .card.matched {
+            background-color: #77dd77;
+            pointer-events: none;
+        }
+
+        .card.hidden {
+            visibility: hidden;
+        }
+
+        .header {
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+
+        .timer {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .congrats-message {
+            display: none;
+            font-size: 20px;
+            color: #4caf50;
+            margin-top: 20px;
+        }
+
+        .audio-button {
+            font-size: 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <audio id="bgMusic" loop>
+        <source src="show.mp3" type="audio/mpeg">
+    </audio>
+    
+    <button id="audioToggle" class="audio-button">🔉</button>
+    
+    <div class="game-container">
+        <div class="header">Memory Grid Puzzle</div>
+        <div class="timer">Time Left: <span id="timer">30</span> seconds</div>
+        <div class="grid" id="grid"></div>
+        <div class="footer">
+            <button id="restartButton">Restart</button>
+        </div>
+        <div class="congrats-message" id="congratsMessage">Congratulations! You won!</div>
+    </div>
+
+    <script>
+        const gridSize = 4;
+        const totalCards = gridSize * gridSize;
+        const timerElement = document.getElementById("timer");
+        const gridElement = document.getElementById("grid");
+        const restartButton = document.getElementById("restartButton");
+        const congratsMessage = document.getElementById("congratsMessage");
+        const bgMusic = document.getElementById("bgMusic");
+        const audioToggle = document.getElementById("audioToggle");
+
+        bgMusic.volume = 0.3; // Lower the volume
+
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let gameInterval;
+        let timeLeft = 30;
+
+        audioToggle.addEventListener("click", () => {
+            if (bgMusic.paused) {
+                bgMusic.play();
+                audioToggle.textContent = "🚫";
+            } else {
+                bgMusic.pause();
+                audioToggle.textContent = "🔉";
+            }
+        });
+
+        const cardValues = Array.from({ length: totalCards / 2 }, (_, i) => i + 1);
+        const shuffledValues = [...cardValues, ...cardValues].sort(() => Math.random() - 0.5);
+
+        function createCard(value, index) {
+            const card = document.createElement("div");
+            card.classList.add("card");
+            card.setAttribute("data-index", index);
+            card.setAttribute("data-value", value);
+            card.addEventListener("click", () => flipCard(card));
+            return card;
+        }
+
+        function flipCard(card) {
+            if (flippedCards.length < 2 && !card.classList.contains("flipped") && !card.classList.contains("matched")) {
+                card.textContent = card.getAttribute("data-value");
+                card.classList.add("flipped");
+                flippedCards.push(card);
+
+                if (flippedCards.length === 2) {
+                    checkMatch();
+                }
+            }
+        }
+
+        function checkMatch() {
+            const [card1, card2] = flippedCards;
+            if (card1.getAttribute("data-value") === card2.getAttribute("data-value")) {
+                card1.classList.add("matched");
+                card2.classList.add("matched");
+                matchedPairs++;
+                if (matchedPairs === cardValues.length) {
+                    clearInterval(gameInterval);
+                    congratsMessage.style.display = "block";
+                }
+            } else {
+                setTimeout(() => {
+                    card1.textContent = "";
+                    card2.textContent = "";
+                    card1.classList.remove("flipped");
+                    card2.classList.remove("flipped");
+                }, 1000);
+            }
+            flippedCards = [];
+        }
+
+        function startTimer() {
+            gameInterval = setInterval(() => {
+                timeLeft--;
+                timerElement.textContent = `Time Left: ${timeLeft} seconds`;
+
+                if (timeLeft <= 0) {
+                    clearInterval(gameInterval);
+                    congratsMessage.textContent = "Time's Up! You lost.";
+                    congratsMessage.style.display = "block";
+                }
+            }, 1000);
+        }
+
+        function restartGame() {
+            flippedCards = [];
+            matchedPairs = 0;
+            timeLeft = 30;
+            timerElement.textContent = `Time Left: 30 seconds`;
+            congratsMessage.style.display = "none";
+            shuffledValues.sort(() => Math.random() - 0.5);
+
+            const cards = shuffledValues.map((value, index) => createCard(value, index));
+            gridElement.innerHTML = "";
+            cards.forEach(card => gridElement.appendChild(card));
+
+            startTimer();
+        }
+
+        restartButton.addEventListener("click", restartGame);
+
+        restartGame();
+    </script>
+</body>
+</html>
