@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Emoji Rain</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: skyblue;
+      font-size: 2rem;
+      user-select: none;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+    }
+
+    #emoji-picker {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 1.5rem;
+      z-index: 10;
+      background: white;
+      padding: 10px;
+      border-radius: 10px;
+    }
+
+    .emoji {
+      position: absolute;
+      pointer-events: auto;
+      cursor: pointer;
+      animation: fall 5s linear infinite;
+    }
+
+    @keyframes fall {
+      0% { transform: translateY(-100px); opacity: 1; }
+      100% { transform: translateY(100vh); opacity: 0; }
+    }
+
+    .balloon {
+      position: absolute;
+      pointer-events: auto;
+      cursor: pointer;
+      animation: fadeIn 1s forwards, rise 6s linear forwards;
+    }
+
+    @keyframes rise {
+      0% { transform: translateY(100vh); opacity: 1; }
+      100% { transform: translateY(-100px); opacity: 0; }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .cloud-emoji {
+      position: absolute;
+      font-size: 25rem;
+      opacity: 0.8;
+      pointer-events: none;
+      line-height: 1;
+      animation: floatCloud 3s ease-in-out infinite, fadeCloud 20s ease-in-out forwards;
+    }
+
+    @keyframes floatCloud {
+      0%, 100% { transform: translateX(0); }
+      50% { transform: translateX(40px); }
+    }
+
+    @keyframes fadeCloud {
+      0% { opacity: 0.8; }
+      100% { opacity: 0; }
+    }
+
+    .cloud-left {
+      top: -5rem;
+      left: -15rem;
+    }
+
+    .cloud-right {
+      top: -5rem;
+      right: -15rem;
+    }
+
+    .emoji-option {
+      margin-right: 8px;
+    }
+
+    @keyframes fallDeflated {
+      0% { transform: translateY(-50px); opacity: 1; }
+      100% { transform: translateY(100vh); opacity: 0; }
+    }
+
+    .deflated {
+      width: 50px;
+      animation: fallDeflated 5s linear forwards;
+      position: absolute;
+      pointer-events: auto;
+      cursor: pointer;
+    }
+
+    .achievement {
+      position: absolute;
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: gold;
+      color: black;
+      font-size: 2rem;
+      padding: 20px;
+      border-radius: 20px;
+      box-shadow: 0 0 20px white;
+      z-index: 20;
+      animation: popUp 1s ease-out, fadeOut 2s ease-in 3s forwards;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+    }
+
+    @keyframes popUp {
+      0% { transform: translateX(-50%) scale(0.5); opacity: 0; }
+      100% { transform: translateX(-50%) scale(1); opacity: 1; }
+    }
+
+    @keyframes fadeOut {
+      to { opacity: 0; transform: translateX(-50%) scale(1.1); }
+    }
+
+    #achievement-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 1.2rem;
+      padding: 10px 15px;
+      background: gold;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      z-index: 10;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+    }
+
+    #achievement-panel {
+      position: absolute;
+      top: 60px;
+      right: 10px;
+      background: white;
+      border-radius: 10px;
+      padding: 15px;
+      width: 250px;
+      max-height: 300px;
+      overflow-y: auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      z-index: 15;
+      display: none;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+    }
+
+    #achievement-panel h3 {
+      margin-top: 0;
+    }
+
+    #close-panel {
+      position: absolute;
+      top: 5px;
+      right: 10px;
+      cursor: pointer;
+      color: red;
+      font-size: 1.2rem;
+    }
+#achievement-panel, #achievement-panel * {
+  font-size: 14px !important;
+}
+
+  </style>
+</head>
+<body>
+
+  <div id="cloud-container"></div>
+
+  <div id="emoji-picker">
+    <label><input type="checkbox" class="emoji-option" value="💧" checked>💧</label>
+    <label><input type="checkbox" class="emoji-option" value="💩">💩</label>
+    <label><input type="checkbox" class="emoji-option" value="🍕">🍕</label>
+    <label><input type="checkbox" class="emoji-option" value="🔥">🔥</label>
+    <label><input type="checkbox" class="emoji-option" value="🧠">🧠</label>
+    <label><input type="checkbox" class="emoji-option" value="🧲">🧲</label>
+    <label><input type="checkbox" class="emoji-option" value="🎈">🎈</label>
+  </div>
+
+  <button id="achievement-btn">Achievements 🏆</button>
+
+  <div id="achievement-panel">
+    <div id="close-panel">✖</div>
+    <h3>Unlocked Achievements</h3>
+    <ul id="achievement-list"></ul>
+  </div>
+
+  <script>
+    const emojiSounds = {
+      "💧": new Audio("rain.mp3"),
+      "💩": new Audio("poop.mp3"),
+      "🍕": new Audio("pizza.mp3"),
+      "🔥": new Audio("fire.mp3"),
+      "🧠": new Audio("brain.mp3"),
+      "🧲": new Audio("magnet.mp3"),
+    };
+
+    function playEmojiSound(char) {
+      if (emojiSounds[char]) {
+        const clone = emojiSounds[char].cloneNode();
+        clone.volume = 0.01;
+        clone.play();
+      }
+    }
+
+    function getSelectedEmojis() {
+      const checkboxes = document.querySelectorAll('.emoji-option');
+      return Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
+    }
+
+    let balloonClickedOnce = false;
+    let balloonOnScreen = false;
+    let achievements = [];
+
+    const clickCounts = {
+      "💧": 0,
+      "💩": 0,
+      "🍕": 0,
+      "🔥": 0,
+      "🧠": 0,
+      "🧲": 0,
+      "🎈": 0,
+      "deflated": 0,
+    };
+
+    function checkAchievements() {
+      if (clickCounts["💧"] >= 5) showAchievement("💧 Achievement Unlocked: Rain Lover");
+      if (clickCounts["💩"] >= 3) showAchievement("💩 Achievement Unlocked: Gross Collector");
+      if (clickCounts["🍕"] >= 3) showAchievement("🍕 Achievement Unlocked: Pizza Addict");
+      if (clickCounts["🔥"] >= 3) showAchievement("🔥 Achievement Unlocked: Pyromaniac");
+      if (clickCounts["🧲"] >= 2) showAchievement("🧲 Achievement Unlocked: Magnetized");
+      if (clickCounts["🧠"] >= 2) showAchievement("🧠 Achievement Unlocked: Brainstormer");
+      if (clickCounts["🎈"] >= 1) showAchievement("🎈 Achievement Unlocked: Balloon Popper");
+      if (clickCounts["deflated"] >= 1) showAchievement("🎈 Achievement Unlocked: Sad Balloon");
+    }
+
+    function createEmoji(char) {
+      const emoji = document.createElement('div');
+      emoji.textContent = char;
+      emoji.style.left = Math.random() * 100 + 'vw';
+      emoji.style.fontSize = (Math.random() * 2 + 1) + 'rem';
+
+      if (char === '🎈') {
+        emoji.className = 'balloon';
+        balloonOnScreen = true;
+
+        emoji.addEventListener('click', () => {
+          emoji.remove();
+          clickCounts["🎈"]++;
+          balloonClickedOnce = true;
+          balloonOnScreen = false;
+          checkAchievements();
+        });
+
+      } else {
+        emoji.className = 'emoji';
+        emoji.style.animationDuration = (Math.random() * 2 + 3) + 's';
+
+        emoji.addEventListener('click', () => {
+          emoji.remove();
+          clickCounts[char] = (clickCounts[char] || 0) + 1;
+          playEmojiSound(char);
+          checkAchievements();
+        });
+
+        playEmojiSound(char);
+      }
+
+      document.body.appendChild(emoji);
+      setTimeout(() => {
+        emoji.remove();
+        if (char === '🎈') balloonOnScreen = false;
+      }, 7000);
+    }
+
+    setInterval(() => {
+      const selected = getSelectedEmojis();
+      if (selected.length === 0) return;
+      selected.forEach(emoji => createEmoji(emoji));
+    }, 300);
+
+    const cloudContainer = document.getElementById('cloud-container');
+    function spawnCloud(position) {
+      const cloud = document.createElement('div');
+      cloud.className = `cloud-emoji ${position}`;
+      cloud.textContent = '☁️';
+      cloudContainer.appendChild(cloud);
+      setTimeout(() => {
+        cloud.remove();
+        spawnCloud(position);
+      }, 20000);
+    }
+    spawnCloud('cloud-left');
+    spawnCloud('cloud-right');
+
+    function spawnDeflatedBalloon() {
+      if (!balloonClickedOnce) return;
+      if (Math.random() < 0.25) {
+        const deflated = document.createElement('img');
+        deflated.src = 'deflate.png';
+        deflated.className = 'deflated';
+        deflated.style.left = Math.random() * 100 + 'vw';
+        deflated.style.top = '-50px';
+        document.body.appendChild(deflated);
+
+        deflated.addEventListener('click', () => {
+          deflated.remove();
+          clickCounts["deflated"]++;
+          checkAchievements();
+        });
+
+        setTimeout(() => deflated.remove(), 6000);
+      }
+    }
+
+    setInterval(spawnDeflatedBalloon, 30000);
+
+    function showAchievement(text) {
+      if (achievements.includes(text)) return;
+      achievements.push(text);
+
+      const li = document.createElement('li');
+      li.textContent = text;
+      document.getElementById('achievement-list').appendChild(li);
+
+      const achievement = document.createElement('div');
+      achievement.className = 'achievement';
+      achievement.textContent = text;
+      document.body.appendChild(achievement);
+      setTimeout(() => achievement.remove(), 5000);
+    }
+
+    document.getElementById('achievement-btn').onclick = () => {
+      const panel = document.getElementById('achievement-panel');
+      panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+    };
+
+    document.getElementById('close-panel').onclick = () => {
+      document.getElementById('achievement-panel').style.display = 'none';
+    };
+  </script>
+</body>
+</html>
