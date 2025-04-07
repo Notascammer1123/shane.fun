@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Reverse Typing</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px 10px;
+      background: #f9f9f9;
+      color: #000;
+      transition: background 0.5s, color 0.5s, transform 0.5s ease-in-out;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    textarea, .output {
+      width: 80%;
+      max-width: 500px;
+      padding: 10px;
+      font-size: 1.2em;
+      border-radius: 10px;
+      border: 2px solid #ccc;
+      margin-bottom: 20px;
+      background-color: white;
+      color: inherit;
+      transition: color 0.5s, border-color 0.5s;
+    }
+
+    .output {
+      min-height: 100px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .bg-button, .mirror-button, .emoji-mode-button, .sound-button, .hacker-mode-button, .rainbow-button {
+      padding: 10px 20px;
+      font-size: 1em;
+      border: none;
+      border-radius: 8px;
+      background: #333;
+      color: white;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+
+    .mirror-button {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+    }
+
+    .emoji-mode-button {
+      position: fixed;
+      top: 60px;
+      right: 10px;
+    }
+
+    .sound-button {
+      position: fixed;
+      top: 110px;
+      right: 10px;
+    }
+
+    .hacker-mode-button {
+      position: fixed;
+      top: 160px;
+      right: 10px;
+    }
+
+    .rainbow-button {
+      position: fixed;
+      top: 210px;
+      right: 10px;
+    }
+
+    .bg-options {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .bg-option {
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: 1px solid #aaa;
+      cursor: pointer;
+      font-weight: bold;
+      background-color: white;
+    }
+
+    .bg-option:hover {
+      background-color: #eee;
+    }
+
+    .emoji-flip {
+      display: inline-block;
+      transform: scaleX(-1);
+    }
+
+    #hiddenCopy {
+      position: absolute;
+      left: -9999px;
+      top: -9999px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>Reverse Typing</h1>
+
+  <button class="bg-button" onclick="toggleBgOptions()">🎨 Change Background</button>
+  <div class="bg-options" id="bgOptions">
+    <div class="bg-option" onclick="setBackground('default')">Default (Gray)</div>
+    <div class="bg-option" onclick="setBackground('red')">🔴 Red</div>
+    <div class="bg-option" onclick="setBackground('blue')">🔵 Blue</div>
+    <div class="bg-option" onclick="setBackground('green')">🟢 Green</div>
+    <div class="bg-option" onclick="setBackground('purple')">🟣 Purple</div>
+  </div>
+
+  <textarea id="input" placeholder="Type here... (emoji too 😊)"></textarea>
+  <div class="output" id="reversedOutput"></div>
+
+  <button class="bg-button" onclick="copyToClipboard()">📋 Copy</button>
+  <span id="copyMsg" style="margin-top:10px; font-weight:bold;"></span>
+
+  <div id="hiddenCopy" contenteditable="true"></div>
+
+  <button class="mirror-button" onclick="toggleMirror()">🪞</button>
+  <button class="emoji-mode-button" onclick="toggleEmojiMode()">🎭</button>
+  <button class="sound-button" onclick="toggleSound()">🎹</button>
+  <button class="hacker-mode-button" onclick="toggleHackerMode()">🕶️</button>
+  <button class="rainbow-button" onclick="toggleRainbowMode()">🌈</button>
+
+  <audio id="keySound" src="s.mp3"></audio>
+
+  <script>
+    const input = document.getElementById("input");
+    const output = document.getElementById("reversedOutput");
+    const bgOptions = document.getElementById("bgOptions");
+    const hiddenCopy = document.getElementById("hiddenCopy");
+    const keySound = document.getElementById("keySound");
+    keySound.volume = 0.2;
+    let currentColor = '#000000';
+    let mirrored = false;
+    let emojiMode = false;
+    let soundOn = false;
+    let hackerMode = false;
+    let rainbowMode = false;
+
+    const emojiMap = {
+      A: '🍎', B: '🐝', C: '🌊', D: '🐶', E: '🦅',
+      F: '🌸', G: '🐐', H: '❤️', I: '🍦', J: '🤹',
+      K: '🦘', L: '🦁', M: '🌕', N: '🐧', O: '🐙',
+      P: '🥞', Q: '👑', R: '🌈', S: '🐍', T: '🌴',
+      U: '☂️', V: '🎻', W: '🐋', X: '❌', Y: '🪀', Z: '🦓'
+    };
+
+    const rainbowColors = ['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet'];
+
+    function isEmoji(char) {
+      const regexEmoji = /\p{Extended_Pictographic}/u;
+      return regexEmoji.test(char);
+    }
+
+    input.addEventListener("input", () => {
+      const chars = Array.from(input.value);
+      let processed = emojiMode
+        ? chars.map(c => {
+            if (c === ' ') return ' ';
+            const upper = c.toUpperCase();
+            return emojiMap[upper] || '';
+          }).join('')
+        : chars.reverse().map((char, i) => {
+            let styledChar = isEmoji(char) ? `<span class="emoji-flip">${char}</span>` : char;
+            if (rainbowMode && !isEmoji(char)) {
+              const color = rainbowColors[i % rainbowColors.length];
+              styledChar = `<span style="color:${color}">${styledChar}</span>`;
+            }
+            return styledChar;
+          }).join("");
+      output.innerHTML = processed;
+    });
+
+    input.addEventListener("keydown", () => {
+      if (soundOn) {
+        keySound.currentTime = 0;
+        keySound.play();
+      }
+    });
+
+    function toggleBgOptions() {
+      bgOptions.style.display = bgOptions.style.display === "flex" ? "none" : "flex";
+    }
+
+    function setBackground(color) {
+      let gradient, fontColor;
+
+      switch (color) {
+        case 'red': gradient = 'linear-gradient(135deg, #ff3c3c, #ff8a8a)'; fontColor = '#cc0000'; break;
+        case 'blue': gradient = 'linear-gradient(135deg, #3399ff, #99ccff)'; fontColor = '#003366'; break;
+        case 'green': gradient = 'linear-gradient(135deg, #33cc66, #99ffcc)'; fontColor = '#006633'; break;
+        case 'purple': gradient = 'linear-gradient(135deg, #cc66ff, #e0b3ff)'; fontColor = '#660099'; break;
+        case 'default':
+        default: gradient = '#f9f9f9'; fontColor = '#000000';
+      }
+
+      currentColor = fontColor;
+      document.body.style.background = gradient;
+      document.body.style.color = fontColor;
+      input.style.color = fontColor;
+      input.style.borderColor = fontColor;
+      output.style.color = fontColor;
+      output.style.borderColor = fontColor;
+      bgOptions.style.display = 'none';
+    }
+
+    function copyToClipboard() {
+      hiddenCopy.innerHTML = `<div style="color: ${currentColor}; font-size: 1.2em;">${output.innerHTML}</div>`;
+      const range = document.createRange();
+      range.selectNodeContents(hiddenCopy);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+
+      try {
+        const successful = document.execCommand('copy');
+        document.getElementById("copyMsg").textContent = successful ? "✅ Copied!" : "❌ Copy failed";
+      } catch (err) {
+        document.getElementById("copyMsg").textContent = "❌ Copy not supported";
+      }
+
+      setTimeout(() => {
+        document.getElementById("copyMsg").textContent = "";
+      }, 2000);
+    }
+
+    function toggleMirror() {
+      mirrored = !mirrored;
+      document.body.style.transform = mirrored ? "scaleX(-1)" : "scaleX(1)";
+    }
+
+    function toggleEmojiMode() {
+      emojiMode = !emojiMode;
+      input.dispatchEvent(new Event("input"));
+    }
+
+    function toggleSound() {
+      soundOn = !soundOn;
+    }
+
+    function toggleHackerMode() {
+      hackerMode = !hackerMode;
+      document.body.style.background = hackerMode ? '#000' : '#f9f9f9';
+      document.body.style.color = hackerMode ? '#00ff00' : currentColor;
+      input.style.backgroundColor = hackerMode ? '#001100' : 'white';
+      output.style.backgroundColor = hackerMode ? '#001100' : 'white';
+      input.style.color = hackerMode ? '#00ff00' : currentColor;
+      output.style.color = hackerMode ? '#00ff00' : currentColor;
+      input.style.fontFamily = output.style.fontFamily = hackerMode ? 'monospace' : 'sans-serif';
+    }
+
+    function toggleRainbowMode() {
+      rainbowMode = !rainbowMode;
+      input.dispatchEvent(new Event("input"));
+    }
+  </script>
+</body>
+</html>

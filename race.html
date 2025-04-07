@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Emoji Race</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: url('https://opengameart.org/sites/default/files/grass03.png');
+      background-size: cover;
+      margin: 0;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    h1 {
+      margin-top: 20px;
+      color: white;
+      text-shadow: 1px 1px 3px black;
+    }
+
+    .viewport {
+      width: 100vw;
+      height: 150px;
+      overflow: hidden;
+      position: relative;
+      margin: 30px 0;
+      border: 3px solid #555;
+      box-shadow: 0 0 10px black;
+    }
+
+    .track {
+      width: 500vw;
+      height: 150px;
+      display: flex;
+      transition: transform 0.5s ease;
+    }
+
+    .stage {
+      width: 100vw;
+      height: 150px;
+      background: url('https://thumbs.dreamstime.com/b/seamless-soil-texture-can-be-used-as-pattern-to-fill-background-wet-square-91725927.jpg');
+      background-size: cover;
+      position: relative;
+      border-left: 3px dashed gray;
+      border-right: 3px dashed gray;
+    }
+
+    .emoji {
+      position: absolute;
+      font-size: 2rem;
+      top: 60px;
+      transition: left 0.1s linear;
+    }
+
+    #winner, #bet-result {
+      font-size: 1.5rem;
+      margin-top: 15px;
+      color: white;
+      text-shadow: 1px 1px 2px black;
+    }
+
+    .bet-buttons {
+      margin: 20px 0;
+    }
+
+    .bet-buttons button {
+      font-size: 1.2rem;
+      padding: 10px 20px;
+      margin: 5px;
+      cursor: pointer;
+      background: white;
+      border: 2px solid #333;
+      border-radius: 5px;
+    }
+
+    .bet-buttons button:disabled {
+      background: #ccc;
+      color: #777;
+      cursor: not-allowed;
+    }
+
+    #start-btn, #money-btn {
+      font-size: 1.2rem;
+      padding: 10px 25px;
+      margin: 10px 5px;
+      background: white;
+      border: 2px solid #333;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .money {
+      position: absolute;
+      font-size: 2rem;
+      animation: fall 1.5s ease-out forwards;
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    @keyframes fall {
+      0% {
+        transform: translateY(-50px) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(200px) rotate(360deg);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>💰 Emoji Race🏁</h1>
+  <p style="color: white; text-shadow: 1px 1px 2px black;">Pick your emoji to bet on before the race starts!</p>
+
+  <div class="bet-buttons">
+    <button onclick="placeBet('🐢')" id="bet-turtle">Bet on 🐢</button>
+    <button onclick="placeBet('🐇')" id="bet-rabbit">Bet on 🐇</button>
+    <button onclick="placeBet('🐥')" id="bet-chick">Bet on 🐥</button>
+  </div>
+
+  <button id="start-btn" onclick="startRace()">Start Race</button>
+  <button id="money-btn" onclick="spreadMoney()">💸 Spread Money</button>
+
+  <div class="viewport">
+    <div class="track" id="track">
+      <div class="stage"><div class="emoji" id="emoji1">🐢</div></div>
+      <div class="stage"><div class="emoji" id="emoji2">🐇</div></div>
+      <div class="stage"><div class="emoji" id="emoji3">🐥</div></div>
+      <div class="stage"></div>
+      <div class="stage"></div>
+    </div>
+  </div>
+
+  <div id="winner"></div>
+  <div id="bet-result"></div>
+
+  <script>
+    const emojis = [
+      { el: document.getElementById("emoji1"), char: "🐢", stage: 0, progress: 0, finished: false },
+      { el: document.getElementById("emoji2"), char: "🐇", stage: 0, progress: 0, finished: false },
+      { el: document.getElementById("emoji3"), char: "🐥", stage: 0, progress: 0, finished: false },
+    ];
+
+    const totalStages = 5;
+    let raceInterval;
+    let userBet = null;
+    let raceStarted = false;
+    let raceWinner = null;
+
+    function placeBet(emoji) {
+      if (userBet) return;
+      userBet = emoji;
+      document.getElementById("bet-result").textContent = `You bet on ${emoji}`;
+      document.getElementById("start-btn").style.display = "inline-block";
+
+      document.getElementById("bet-turtle").disabled = true;
+      document.getElementById("bet-rabbit").disabled = true;
+      document.getElementById("bet-chick").disabled = true;
+    }
+
+    function startRace() {
+      if (!userBet || raceStarted) return;
+      raceStarted = true;
+      document.getElementById("start-btn").style.display = "none";
+
+      raceInterval = setInterval(() => {
+        for (const emoji of emojis) {
+          if (emoji.finished) continue;
+
+          emoji.progress += Math.random() * 1.5;
+          if (emoji.progress >= 100) {
+            emoji.stage++;
+            emoji.progress = 0;
+
+            if (emoji.stage >= totalStages) {
+              emoji.finished = true;
+
+              // Record winner only once
+              if (!raceWinner) {
+                raceWinner = emoji;
+              }
+              continue;
+            }
+          }
+
+          updatePosition(emoji);
+        }
+        updateCamera();
+
+        if (emojis.every(e => e.finished)) {
+          clearInterval(raceInterval);
+          showResults();
+        }
+      }, 50);
+    }
+
+    function updatePosition(emoji) {
+      const left = emoji.progress + "%";
+      const container = document.querySelectorAll(".stage")[emoji.stage];
+      container.appendChild(emoji.el);
+      emoji.el.style.left = left;
+    }
+
+    function updateCamera() {
+      const maxStage = Math.max(...emojis.map(e => e.stage));
+      document.getElementById("track").style.transform = `translateX(-${maxStage * 100}vw)`;
+    }
+
+    function showResults() {
+      if (!raceWinner) return;
+      document.getElementById("winner").textContent = `🏁 ${raceWinner.char} wins the race!`;
+
+      if (raceWinner.char === userBet) {
+        document.getElementById("bet-result").textContent = `🎉 You won your bet!`;
+      } else {
+        document.getElementById("bet-result").textContent = `😢 You lost the bet.`;
+      }
+    }
+
+    function spreadMoney() {
+      const viewport = document.querySelector(".viewport");
+      for (let i = 0; i < 20; i++) {
+        const money = document.createElement("div");
+        money.className = "money";
+        money.textContent = Math.random() > 0.5 ? "💵" : "💰";
+        money.style.left = Math.random() * window.innerWidth + "px";
+        money.style.top = "-20px";
+        viewport.appendChild(money);
+
+        setTimeout(() => {
+          money.remove();
+        }, 2000);
+      }
+    }
+  </script>
+
+</body>
+</html>

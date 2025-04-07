@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bubble Popper</title>
+  <style>
+    body {
+      margin: 0;
+      background: linear-gradient(to top, #a0c8ff, #ffffff);
+      overflow: hidden;
+      height: 100vh;
+      position: relative;
+    }
+
+    .bubble {
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background-image: url('https://www.freeiconspng.com/uploads/bubbles-png-1.png');
+      background-size: cover;
+      background-position: center;
+      animation: float 10s ease-in-out forwards;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(100vh) scale(1);
+        opacity: 0;
+      }
+      10% {
+        opacity: 1;
+      }
+      50% {
+        transform: translateY(50vh) scale(1.02);
+      }
+      100% {
+        transform: translateY(-100px) scale(1.05);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <script>
+    function createBubble() {
+      const bubble = document.createElement("div");
+      bubble.classList.add("bubble");
+      const left = Math.random() * (window.innerWidth - 80);
+      bubble.style.left = left + "px";
+      bubble.style.animationDuration = 8 + Math.random() * 5 + "s";
+
+      bubble.addEventListener("click", () => {
+        bubble.remove();
+        const pop = new Audio("pop.mp3");
+        pop.volume = 0.4;
+        pop.play();
+      });
+
+      document.body.appendChild(bubble);
+
+      setTimeout(() => {
+        bubble.remove();
+      }, 14000);
+    }
+
+    setInterval(createBubble, 500);
+  </script>
+</body>
+</html>
