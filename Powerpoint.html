@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>PowerPoint Games</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f5f5f5;
+      text-align: center;
+      padding: 50px;
+    }
+
+    h1 {
+      font-size: 3em;
+      margin-bottom: 40px;
+    }
+
+    .game {
+      margin: 20px auto;
+      width: 300px;
+    }
+
+    .game img {
+      width: 100%;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .game img:hover {
+      transform: scale(1.03);
+    }
+
+    .options {
+      display: none;
+      margin-top: 10px;
+    }
+
+    .options a {
+      display: block;
+      padding: 8px;
+      background: white;
+      margin: 5px 0;
+      text-decoration: none;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      color: black;
+    }
+
+    .options a:hover {
+      background: #eee;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>PowerPoint Games</h1>
+
+  <div class="game">
+    <img src="TheImpossibleGame.png" alt="The Impossible Game" onclick="toggleOptions(this)">
+    <div class="options">
+      <a href="https://youtu.be/nr6u4IAtFho?si=BT2n6sCn_afh6LUI" target="_blank">🎬 Watch Trailer</a>
+      <a href="https://www.youtube.com/redirect?event=video_description&redir_token=QUFFLUhqblc3UmZiWnNoQVdKNnI4ZkFqenVIa3JXbXdjQXxBQ3Jtc0trT3E2ZFh2WmZKWkxFQUNyUXhTeS1FSXRvSTVlU2tReWhnNEpjNXUxcC1hcXVfM0MyT1l3T2NPcnZjQ0Jja0JHd1RsWXRYbERhaWhzMjlWdHFSa1FRUkxiX09LZDNuYlB1UkpxQlRwZkp6a2JRVXBwOA&q=https%3A%2F%2Fdrive.google.com%2Ffile%2Fd%2F12PJmrk4REEE17kjaPlWZVlZ69zEtUFlV%2Fview%3Fusp%3Dsharing&v=nr6u4IAtFho" target="_blank">🛒 Buy</a>
+    </div>
+  </div>
+
+  <script>
+    function toggleOptions(img) {
+      const options = img.nextElementSibling;
+      options.style.display = options.style.display === "block" ? "none" : "block";
+    }
+  </script>
+
+</body>
+</html>
