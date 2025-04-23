@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Guess</title></head>
+<body>
+<p>I picked a number 1‑100.</p>
+<input id="g" type="number"><button onclick="guess()">Guess</button>
+<p id="out"></p>
+<script>
+let num=Math.floor(Math.random()*100)+1, tries=0;
+function guess(){
+  tries++;
+  let v=+document.getElementById("g").value;
+  document.getElementById("out").textContent=
+    v===num?`Correct in ${tries} tries!`:(v<num?"Higher":"Lower");
+  if(v===num){tries=0;num=Math.floor(Math.random()*100)+1;}
+}
+</script>
+</body>
+</html>
