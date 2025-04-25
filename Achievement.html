@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Achievement Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            position: relative;
+        }
+        .achievement {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 123, 255, 0.9);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            opacity: 0;
+            transition: opacity 1s ease-out;
+            z-index: 1000;
+        }
+        .achievement-list {
+            margin-top: 80px;
+            font-size: 18px;
+        }
+        .achievement-list h2 {
+            font-size: 24px;
+            text-align: center;
+        }
+        .achievement-item {
+            margin: 5px 0;
+            padding: 5px;
+            background-color: #f0f8ff;
+            border: 1px solid #d1e7f3;
+            border-radius: 3px;
+        }
+        .textbox {
+            width: 100%;
+            height: 150px;
+            padding: 10px;
+            font-size: 16px;
+            margin-top: 30px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        #imageAchiever {
+            display: block;
+            margin: 30px auto;
+            width: 200px;
+            height: 200px;
+            cursor: pointer;
+        }
+        #hoverButton {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to Achievement Land!</h1>
+    <p>Select some text, move your mouse around, or type in the box below to earn achievements!</p>
+
+    <!-- Achievement Box (Floating Notification) -->
+    <div class="achievement" id="achievementBox"></div>
+
+    <!-- Achievements List -->
+    <div class="achievement-list">
+        <h2>Your Achievements</h2>
+        <ul id="achievementsList"></ul>
+    </div>
+
+
+    <!-- Text Box for Achievements -->
+    <textarea class="textbox" id="achievementTextBox" placeholder="Type something to earn achievements..."></textarea>
+
+    <!-- Clickable Image for Adding Achievements -->
+    <img id="imageAchiever" src="https://media.wired.com/photos/635332d4df421c97f296e358/master/w_2560%2Cc_limit/How-To-Extract-Text-From-Any-Image-Gear-679592092.jpg" alt="Click Me for More Achievements" />
+
+    <!-- Hover Button for Achievements -->
+    <button id="hoverButton">Hover Button</button>
+
+    <script>
+        const achievementBox = document.getElementById('achievementBox');
+        const achievementsList = document.getElementById('achievementsList');
+        const textBox = document.getElementById('achievementTextBox');
+        const imageAchiever = document.getElementById('imageAchiever');
+        const hoverButton = document.getElementById('hoverButton');
+        
+        // Store unlocked achievements in a Set to avoid duplicates
+        const unlockedAchievements = new Set();
+
+        // Function to show achievement as a floating notification
+        function showAchievement(message) {
+            if (unlockedAchievements.has(message)) return;  // Do nothing if already unlocked
+
+            // Mark achievement as unlocked
+            unlockedAchievements.add(message);
+            
+            // Show floating achievement
+            achievementBox.textContent = message;
+            achievementBox.style.opacity = 1;
+            setTimeout(() => {
+                achievementBox.style.opacity = 0;
+            }, 2000);
+
+            // Add to the achievements list
+            const listItem = document.createElement('li');
+            listItem.classList.add('achievement-item');
+            listItem.textContent = message;
+            achievementsList.appendChild(listItem);
+        }
+
+        // Mouse move event
+        document.addEventListener('mousemove', () => {
+            showAchievement("Explorer: Moved your mouse!");
+        });
+
+        // Click event
+        document.addEventListener('click', () => {
+            showAchievement("Click Master: You clicked!");
+        });
+
+        // Scroll event
+        document.addEventListener('scroll', () => {
+            showAchievement("Scroll Champion: You scrolled!");
+        });
+
+        // Hover over button event
+        hoverButton.addEventListener('mouseover', () => {
+            showAchievement("Hover Hero: You hovered over the button!");
+        });
+
+        // Right-click event for the entire page
+        document.addEventListener('contextmenu', (event) => {
+            event.preventDefault(); // Disable right-click menu
+            showAchievement("Right Clicker: You right-clicked!");
+        });
+
+        // Detect text selection event using mouseup
+        document.addEventListener('mouseup', () => {
+            const selectedText = window.getSelection().toString();
+            if (selectedText.length > 0 && !unlockedAchievements.has("Text Selector: You selected text!")) {
+                showAchievement("Text Selector: You selected text!");
+            }
+        });
+
+        // Detect typed text in the text box for specific achievements
+        textBox.addEventListener('input', () => {
+            const typedText = textBox.value.toLowerCase();
+
+            // Check for specific phrases or words
+            if (typedText.includes("hello") && !unlockedAchievements.has("Hello Master: Typed 'hello'")) {
+                showAchievement("Hello Master: Typed 'hello'");
+            }
+            if (typedText.includes("win") && !unlockedAchievements.has("Winner: Typed 'win'")) {
+                showAchievement("Winner: Typed 'win'");
+            }
+            if (typedText.includes("achievement") && !unlockedAchievements.has("Achievement Seeker: Typed 'achievement'")) {
+                showAchievement("Achievement Seeker: Typed 'achievement'");
+            }
+            if (typedText.includes("good job") && !unlockedAchievements.has("Good Job: Typed 'good job'")) {
+                showAchievement("Good Job: Typed 'good job'");
+            }
+            if (typedText.includes("congratulations") && !unlockedAchievements.has("Congratulations: Typed 'congratulations'")) {
+                showAchievement("Congratulations: Typed 'congratulations'");
+            }
+        });
+
+        // Achievement for pressing any key
+        document.addEventListener('keydown', () => {
+            showAchievement("Key Master: You pressed a key!");
+        });
+
+        // Detect tab change (visibility change)
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden' && !unlockedAchievements.has("Tab Change: You switched tabs!")) {
+                showAchievement("Tab Change: You switched tabs!");
+            }
+        });
+
+        // Detect window change (focus or blur)
+        let isWindowFocused = true; // To track if the window was already focused
+
+        window.addEventListener('blur', () => {
+            isWindowFocused = false;
+            if (!unlockedAchievements.has("Window Change: You switched windows!")) {
+                showAchievement("Window Change: You switched windows!");
+            }
+        });
+
+        window.addEventListener('focus', () => {
+            if (!isWindowFocused) {
+                showAchievement("Window Focus: You came back to this window!");
+                isWindowFocused = true; // Reset after it triggers
+            }
+        });
+
+        // New achievement for clicking the image
+        imageAchiever.addEventListener('click', () => {
+            showAchievement("Image Clicker: You clicked the image to unlock more!");
+        });
+
+        // Right-click on image event for image-specific achievement
+        imageAchiever.addEventListener('contextmenu', e => {
+            e.preventDefault(); // Prevent the default right-click menu
+            showAchievement("Image Right-Clicker: You right-clicked on the image!");
+        });
+
+        // Hover Button Click Counter for "Hover Master" Achievement
+        let hoverButtonClickCount = 0;
+        hoverButton.addEventListener('click', () => {
+            hoverButtonClickCount++;
+            if (hoverButtonClickCount === 10) {
+                showAchievement("Hover Master: Clicked the hover button 10 times!");
+            }
+        });
+
+        // Caps Lock detection for Caps Lock Master Achievement
+        document.addEventListener('keydown', (event) => {
+            if (event.getModifierState("CapsLock") && !unlockedAchievements.has("Caps Lock Master: You pressed Caps Lock!")) {
+                showAchievement("Caps Lock Master: You pressed Caps Lock!");
+            }
+        });
+    </script>
+</body>
+</html>
