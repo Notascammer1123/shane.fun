@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Nothing</title>
+<style>
+  body {
+    background-color: #0e0e0e;
+    color: #e0e0e0;
+    font-family: monospace;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+  }
+  .progress-container {
+    width: 500px;
+    background: #333;
+    border: 1px solid #555;
+    height: 30px;
+    position: relative;
+    margin-bottom: 20px;
+  }
+  .progress-bar {
+    background: #0f0;
+    height: 100%;
+    width: 0%;
+    transition: width 0.1s linear;
+  }
+  .status {
+    margin-bottom: 20px;
+    font-size: 1.5em;
+  }
+  .patch-notes {
+    font-size: 1.3em;
+    margin-top: 10px;
+    height: 60px;
+    overflow: hidden;
+    text-align: center;
+  }
+  .achievement-pop {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: #222;
+    border: 1px solid #444;
+    padding: 10px;
+    display: none;
+    white-space: pre-line;
+    line-height: 1.5;
+  }
+  #pollButtons {
+    margin-top: 10px;
+    display: none;
+  }
+  #pollButtons button {
+    font-size: 1em;
+    margin: 0 10px;
+    padding: 5px 15px;
+    cursor: pointer;
+  }
+  #achievementsBtn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 5px 10px;
+    cursor: pointer;
+    display: none;
+    background-color: #222;
+    border: 1px solid #444;
+    color: #0f0;
+    font-family: monospace;
+    font-size: 1em;
+    user-select: none;
+  }
+  #achievementsList {
+    position: absolute;
+    top: 40px;
+    right: 10px;
+    background-color: #111;
+    border: 1px solid #444;
+    padding: 10px;
+    max-width: 300px;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+    font-family: monospace;
+    font-size: 1em;
+    color: #0f0;
+    text-align: left;
+    white-space: pre-line;
+    line-height: 1.5;
+    z-index: 100;
+  }
+</style>
+</head>
+<body>
+  <div class="status" id="statusText">Loading Nothing... 0% Complete</div>
+  <div class="progress-container">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+  <div class="patch-notes" id="patchNotes">Initializing nothingness...</div>
+  <div class="achievement-pop" id="achievementPop"></div>
+
+  <div id="pollButtons">
+    <button id="yesBtn">Yes</button>
+    <button id="noBtn">No</button>
+  </div>
+
+  <button id="achievementsBtn">Achievements</button>
+  <div id="achievementsList"></div>
+
+<script>
+  const patchNotes = document.getElementById("patchNotes");
+  const achievementPop = document.getElementById("achievementPop");
+  const progressBar = document.getElementById("progressBar");
+  const statusText = document.getElementById("statusText");
+  const pollButtons = document.getElementById("pollButtons");
+  const yesBtn = document.getElementById("yesBtn");
+  const noBtn = document.getElementById("noBtn");
+  const achievementsBtn = document.getElementById("achievementsBtn");
+  const achievementsList = document.getElementById("achievementsList");
+
+  let progress = 0;
+  const maxProgress = 99;
+  let stopped = false;
+
+  function getProgressInterval() {
+    if(progress > 90) return 400 + Math.random() * 600;
+    if(progress > 70) return 200 + Math.random() * 300;
+    if(progress > 50) return 100 + Math.random() * 200;
+    return 100 + Math.random() * 100;
+  }
+
+  function updateProgress() {
+    if(progress < maxProgress) {
+      progress++;
+      progressBar.style.width = progress + "%";
+      statusText.textContent = `Loading Nothing... ${progress}% Complete`;
+      setTimeout(updateProgress, getProgressInterval());
+    }
+  }
+  updateProgress();
+
+  const patches = [
+    "v1.1: Slightly decreased the presence of something.",
+    "v1.2: Added more nothing.",
+    "v1.3: Rebalanced the nothing curve.",
+    "v1.4: Removed minor particles of meaning.",
+    "v1.5: Now 40% more empty!",
+    "v1.6: Fixed bug where something happened.",
+    "v1.7: Nothing now supports 4K.",
+    "v1.8: Improved nothing rendering pipeline",
+    "v1.9: Reduced unnecessary somethings by 99.9%",
+    "v2.0: Added support for invisible updates",
+    "v2.1: Fixed a bug that didn't exist",
+    "v2.2: Nothing now loads 20% faster (or does it?)",
+    "v2.3: Enhanced emptiness detection algorithms",
+    "v2.4: Updated the UI to be even less useful",
+    "v2.5: Removed deprecated features… that were never added",
+    "v2.6: Increased overall nothingness by 0.0001%",
+    "v2.7: Added an Easter egg: You won't find it",
+    "v2.8: Fixed an infinite loop of nothingness",
+    "v2.9: Optimized loading bar to be 100% unproductive",
+    "v3.0: Improved the speed of absolutely nothing",
+    "v3.1: Fixed a typo in the nothingness descriptor",
+    "v3.2: Increased latency for maximum inefficiency",
+    "v3.3: Added optional feature to disable nothing",
+    "v3.4: Removed support for something that never was",
+    "v3.5: Now compatible with all versions of emptiness",
+    "v3.6: Patched a leak in the vacuum subsystem",
+    "v3.7: Improved the subtle art of doing less",
+    "v3.8: Reduced energy consumption to zero watts",
+    "v3.9: Added invisible progress indicators",
+    "v4.0: Completely rewrote the nothing engine in assembly",
+    "v4.1: Introduced new placeholder variables for nothing",
+    "v4.2: Optimized for minimal user engagement",
+    "v4.3: Fixed performance issues caused by over-nothinging",
+    "v4.4: Enhanced the anti-feature to anti-nothing",
+    "v4.5: Added new empty sound effects that don't play",
+    "v4.6: Minor bug fixes related to non-existent issues",
+    "v4.7: Updated documentation to be less informative",
+    "v4.8: Added countdown timer to nowhere",
+    "v4.9: Fixed a race condition between two nothing processes",
+    "v5.0: Major overhaul of the nothing core framework",
+    "v5.1: If you're doing nothing, I would just like to say that there are achievements",
+    "v5.2: Maybe clicking???",
+    "v5.3: Do you want to do something? Do you want to see something in the UI?",
+    "v5.4: Poll for something started"
+  ];
+
+  const achievementMessages = [
+    "Something: How dare you do something in nothing?!",
+    "Nothing: Sat through 2 minutes of nothing",
+    "Zen Master: Endured 10 minutes of absolute nothing",
+    "Existence Proved: Clicked, right-clicked, scrolled, and typed",
+    "Did everything in Nothing: Collected all the achievements"
+  ];
+
+  let patchIndex = 0;
+  let clickCount = 0;
+  let startTime = Date.now();
+  const unlockedAchievements = new Set();
+  const interactionTypes = new Set();
+  let pollHasAppeared = false;
+
+  document.body.addEventListener('click', () => {
+    if (!unlockedAchievements.has(0)) {
+      triggerAchievement(0);
+    }
+    interactionTypes.add('click');
+    checkInteractionAchievement();
+  });
+
+  document.body.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    interactionTypes.add('rightclick');
+    checkInteractionAchievement();
+    return false;
+  });
+
+  document.body.addEventListener('auxclick', (e) => {
+    if (e.button === 1) {
+      interactionTypes.add('middleclick');
+      checkInteractionAchievement();
+    }
+  });
+
+  document.addEventListener('keydown', () => {
+    interactionTypes.add('keypress');
+    checkInteractionAchievement();
+  });
+
+  setInterval(() => {
+    const timeSpent = (Date.now() - startTime) / 1000;
+    if (timeSpent > 120 && !unlockedAchievements.has(1)) {
+      triggerAchievement(1);
+    }
+    if (timeSpent > 600 && !unlockedAchievements.has(2)) {
+      triggerAchievement(2);
+    }
+    if (unlockedAchievements.size >= 4 && !unlockedAchievements.has(4)) {
+      triggerAchievement(4);
+    }
+  }, 1000);
+
+  function checkInteractionAchievement() {
+    if (interactionTypes.has('click') && 
+        interactionTypes.has('rightclick') && 
+        interactionTypes.has('middleclick') && 
+        interactionTypes.has('keypress') && 
+        !unlockedAchievements.has(3)) {
+      triggerAchievement(3);
+    }
+  }
+
+  function updatePatchNotes() {
+    if(stopped) return;
+    if(patchIndex >= patches.length) {
+      clearInterval(patchInterval);
+      pollButtons.style.display = "block";
+      pollHasAppeared = true;
+      return;
+    }
+    const note = patches[patchIndex];
+    patchNotes.textContent = note;
+
+    if(note === "v5.4: Poll for something started") {
+      pollButtons.style.display = "block";
+      pollHasAppeared = true;
+    }
+    patchIndex++;
+  }
+
+  const patchInterval = setInterval(updatePatchNotes, 5000);
+
+  function triggerAchievement(index) {
+    if(unlockedAchievements.has(index)) return;
+    unlockedAchievements.add(index);
+    const message = achievementMessages[index];
+    
+    achievementPop.textContent = message;
+    achievementPop.style.display = "block";
+    setTimeout(() => {
+      achievementPop.style.display = "none";
+    }, 3000);
+    
+    if(achievementsList.style.display === "block") {
+      updateAchievementsList();
+    }
+  }
+
+  function updateAchievementsList() {
+    achievementsList.innerHTML = Array.from(unlockedAchievements)
+      .map(i => `• ${achievementMessages[i]}`)
+      .join("<br><br>") || "No achievements unlocked yet.";
+  }
+
+  achievementsBtn.addEventListener("click", () => {
+    if(achievementsList.style.display === "block") {
+      achievementsList.style.display = "none";
+    } else {
+      achievementsList.style.display = "block";
+      updateAchievementsList();
+    }
+  });
+
+  yesBtn.addEventListener("click", () => {
+    alert("Thanks for supporting the nothing!");
+    pollButtons.style.display = "none";
+    if (pollHasAppeared) {
+      achievementsBtn.style.display = "block";
+    }
+  });
+
+  noBtn.addEventListener("click", () => {
+    // Do nothing as requested
+  });
+</script>
+</body>
+</html>
