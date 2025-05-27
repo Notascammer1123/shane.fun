@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="icon" href="https://images.emojiterra.com/google/android-11/512px/1f3b2.png" type="image/png">
+  <title>Dice Maker</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f4f8;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      font-weight: 700;
+      color: #2c3e50;
+    }
+
+    .controls {
+      background: white;
+      padding: 25px 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      max-width: 400px;
+      width: 100%;
+      margin-bottom: 40px;
+    }
+
+    label {
+      display: flex;
+      flex-direction: column;
+      font-weight: 600;
+      font-size: 14px;
+      color: #555;
+      min-width: 120px;
+    }
+
+    input[type="number"],
+    select {
+      margin-top: 8px;
+      padding: 8px 12px;
+      font-size: 18px;
+      border-radius: 6px;
+      border: 1.5px solid #ccc;
+      transition: border-color 0.3s ease;
+    }
+
+    input[type="number"]:focus,
+    select:focus {
+      outline: none;
+      border-color: #3498db;
+      box-shadow: 0 0 6px #a0d8ff;
+    }
+
+    button {
+      background: #3498db;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 8px;
+      color: white;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      min-width: 140px;
+      align-self: center;
+      margin-top: 10px;
+      box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+    }
+
+    button:hover {
+      background: #2573b7;
+    }
+
+    #result {
+      font-size: 80px;
+      letter-spacing: 16px;
+      min-height: 120px;
+      user-select: none;
+      color: #2c3e50;
+      font-weight: 900;
+      text-align: center;
+      width: 100%;
+      max-width: 400px;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.07);
+      padding: 20px 10px;
+      margin-top: 10px;
+      font-family: 'Segoe UI Symbol', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Dice Maker</h2>
+
+  <div class="controls">
+    <label>
+      Number of sides:
+      <input type="number" id="sides" value="6" min="1" max="200" />
+    </label>
+
+    <label>
+      Dice type:
+      <select id="diceType">
+        <option value="number">Numbers (1,2,3...)</option>
+        <option value="letter">Letters (A, B, C...)</option>
+        <option value="emoji">Emojis</option>
+      </select>
+    </label>
+  </div>
+
+  <button id="rollBtn">Roll Dice</button>
+
+  <div id="result"></div>
+
+  <audio id="diceSound" src="dice.mp3" preload="auto"></audio>
+
+  <script>
+    const rollBtn = document.getElementById('rollBtn');
+    const resultDiv = document.getElementById('result');
+    const sidesInput = document.getElementById('sides');
+    const diceTypeSelect = document.getElementById('diceType');
+    const diceSound = document.getElementById('diceSound');
+
+    const diceFaces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+
+    const emojiList = [
+      '😀','😃','😄','😁','😆','😅','😂','🤣','😊','😇','🙂','🙃','😉','😌','😍','🥰','😘','😗','😙','😚',
+      '😋','😛','😝','😜','🤪','🤨','🧐','🤓','😎','🥸','🤩','🥳','😏','😒','😞','😔','😟','😕','🙁','☹️',
+      '😣','😖','😫','😩','🥺','😢','😭','😤','😠','😡','🤬','🤯','😳','🥵','🥶','😱','😨','😰','😥','😓',
+      '🤗','🤔','🤭','🤫','🤥','😶','😐','😑','😬','🙄','😯','😦','😧','😮','😲','🥱','😴','🤤','😪','😵',
+      '🤐','🥴','🤢','🤮','🤧','😷','🤒','🤕','🤑','🤠','😈','👿','👹','👺','🤡','💩','👻','💀','☠️','👽',
+      '👾','🤖','🎃','😺','😸','😹','😻','😼','😽','🙀','😿','😾','👐','🙌','👏','🤝','👍','👎','👊','✊',
+      '🤛','🤜','🤞','✌️','🤟','🤘','👌','👈','👉','👆','👇','☝️','✋','🤚','🖐️','🖖','👋','🤙','💪','🦾'
+    ];
+
+    function getRandomInt(max) {
+      return Math.floor(Math.random() * max);
+    }
+
+    function generateRoll(sides, type) {
+      if (type === 'number') {
+        if (sides <= 6) {
+          const roll = getRandomInt(sides);
+          return { display: diceFaces[roll], total: roll + 1 };
+        } else {
+          const diceCount = Math.ceil(sides / 6);
+          let rolls = [];
+          let sum = 0;
+          for (let i = 0; i < diceCount; i++) {
+            const roll = getRandomInt(6);
+            rolls.push(diceFaces[roll]);
+            sum += (roll + 1);
+          }
+          return { display: rolls.join(' '), total: sum };
+        }
+      } else if (type === 'letter') {
+        if (sides > 26) return null;
+        const charCode = 65 + getRandomInt(sides);
+        return { display: String.fromCharCode(charCode), total: null };
+      } else if (type === 'emoji') {
+        const maxSides = Math.min(sides, emojiList.length);
+        const idx = getRandomInt(maxSides);
+        return { display: emojiList[idx], total: null };
+      }
+    }
+
+    function rollAnimation(sides, type) {
+      const duration = 1000; // 1 second animation
+      const frameRate = 60;  // ~60 FPS
+      const totalFrames = Math.floor((duration / 1000) * frameRate);
+      let currentFrame = 0;
+
+      rollBtn.disabled = true;
+
+      const animation = setInterval(() => {
+        const rollResult = generateRoll(sides, type);
+        if (rollResult === null) {
+          clearInterval(animation);
+          resultDiv.innerHTML = 'Max 26 sides for letters!';
+          rollBtn.disabled = false;
+          return;
+        }
+        if(type === 'number' && rollResult.total !== null) {
+          resultDiv.innerHTML = rollResult.display + '<br><small style="font-size:24px;color:#555;margin-top:8px;">Total: ' + rollResult.total + '</small>';
+        } else {
+          resultDiv.textContent = rollResult.display;
+        }
+        currentFrame++;
+
+        if (currentFrame >= totalFrames) {
+          clearInterval(animation);
+          const finalRoll = generateRoll(sides, type);
+          if(type === 'number' && finalRoll.total !== null) {
+            resultDiv.innerHTML = finalRoll.display + '<br><small style="font-size:24px;color:#555;margin-top:8px;">Total: ' + finalRoll.total + '</small>';
+          } else {
+            resultDiv.textContent = finalRoll.display;
+          }
+          rollBtn.disabled = false;
+        }
+      }, 1000 / frameRate);
+    }
+
+    rollBtn.addEventListener('click', () => {
+      const sides = parseInt(sidesInput.value);
+      const type = diceTypeSelect.value;
+
+      if (isNaN(sides) || sides < 1) {
+        alert('Please enter a valid number of sides (greater than 0).');
+        return;
+      }
+      if (type === 'letter' && sides > 26) {
+        alert('Max 26 sides for letters.');
+        return;
+      }
+
+      diceSound.currentTime = 0;
+      diceSound.play();
+
+      rollAnimation(sides, type);
+    });
+  </script>
+
+</body>
+</html>
