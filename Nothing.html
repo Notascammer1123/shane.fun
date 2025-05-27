@@ -140,7 +140,7 @@
     if(progress < maxProgress) {
       progress++;
       progressBar.style.width = progress + "%";
-      statusText.textContent = `Loading Nothing... ${progress}% Complete`;
+      statusText.textContent = `Loading Something... ${progress}% Complete`;
       setTimeout(updateProgress, getProgressInterval());
     }
   }
