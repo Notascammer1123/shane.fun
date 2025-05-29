@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" href="https://www.gstatic.com/android/keyboard/emojikitchen/20250130/u1f331/u1f331_u1f9a0.png?fbx" type="image/png">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Emojimon</title>
+<style>
+  body {
+    margin: 0;
+    font-family: sans-serif;
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+  #sidebar {
+    width: 25%;
+    background: #f3f3f3;
+    padding: 10px;
+    overflow-y: auto;
+    border-right: 2px solid #ccc;
+  }
+  #stage {
+    width: 75%;
+    position: relative;
+    background: #fff;
+    overflow: hidden;
+  }
+  .emoji-item {
+    font-size: 2rem;
+    cursor: grab;
+    margin: 5px;
+    display: inline-block;
+    user-select: none;
+  }
+  .emoji-item.combo {
+    background: rgba(255, 215, 0, 0.2);
+    border-radius: 10px;
+    padding: 2px 6px;
+    display: inline-block;
+  }
+  .emoji-on-stage {
+    position: absolute;
+    font-size: 3rem;
+    cursor: grab;
+    user-select: none;
+    z-index: 1;
+  }
+  .emoji-on-stage.combo {
+    background: rgba(255, 215, 0, 0.2);
+    border-radius: 10px;
+    padding: 2px 6px;
+  }
+  .emoji-on-stage.dragging {
+    cursor: grabbing;
+    z-index: 10;
+    opacity: 0.9;
+  }
+  #toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0,0,0,0.8);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+    z-index: 1000;
+  }
+  #toast.show {
+    opacity: 1;
+  }
+  #trash {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+    font-size: 3.5rem;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 12px;
+  }
+  #trash.highlight {
+    background-color: rgba(255,0,0,0.2);
+    transform: scale(1.2);
+  }
+</style>
+</head>
+<body>
+  <div id="sidebar">
+    <h2>EmojiDex</h2>
+    <div id="emoji-list"></div>
+  </div>
+  <div id="stage">
+    <div id="trash" title="Click to clear all!">🗑️</div>
+  </div>
+  <div id="toast"></div>
+
+<script>
+  const baseEmojis = ['🐣', '🐛', '🌱', '🔥'];
+  const comboMap = {
+    '🐣+🔥': '🔥🐔',
+    '🐛+🌱': '🦋',
+    '🐣+🐛': '🐓',
+    '🌱+🔥': '🌵',
+    '🦋+🌱': '🌸',
+    '🔥🐔+🌱': '🌶️🐔',
+    '🐓+🔥': '🍗',
+    '🌵+🐓': '🦎',
+    '🌸+🐓': '🐦',
+    '🌶️🐔+🐦': '🌶️🐦',
+    '🦎+🌸': '🐍',
+    '🌶️🐦+🐍': '🔥🐍',
+    '🍗+🔥': '🍖',
+    '🔥🐔+🐔': '🐓',
+    '🐔+🔥': '🔥🐔',
+    '🌸+🐛': '🐞',
+    '🐞+🌱': '🍃',
+    '🍃+🔥': '🍂',
+    '🍂+🐛': '🐝',
+    '🐝+🌸': '🌼',
+    '🌼+🐣': '🐤',
+    '🐤+🔥': '🔥🐦',
+    '🔥🐦+🌱': '🍗🌿',
+    '🍗+🍃': '🍖',
+    '🍖+🔥': '🍗🔥',
+    '🌵+🐣': '🦅',
+    '🦅+🔥': '🔥🦅',
+    '🔥🦅+🌸': '🦜',
+    '🦜+🐞': '🐦',
+    '🐦+🌱': '🌿',
+    '🌿+🐣': '🐤🌿',
+    '🌼+🍃': '🍂',
+    '🍖+🌿': '🧪',
+    '🧪+🔥': '⚙️',
+    '⚙️+🐝': '⏳',
+    '⏳+🔥': '🕰️',
+    '🐔🌿+🍂': '🧓',
+    '🧓+🔥': '🕰️',
+    '🌋+🌱': '🕰️',
+    '🍂+🔥': '🌋',
+    '⏳+🐣': '👶',
+    '⏳+🐓': '🧓',
+    '⏳+🧓': '💀',
+    '⏳+🌱': '🌿',
+    '⏳+🌿': '🍂',
+    '⏳+🍂': '❄️',
+    '⏳+🔥': '💣',
+    '💣+🔥': '💥',
+    '⏳+⚙️': '🤖',
+    '⏳+🧪': '🔬',
+    '⏳+🔬': '🧠',
+    '🐔+💣': '💥🐔',
+    '🐝+🐝': '🅱️',
+    '🌼+💀': '💐',
+    '🐍+🍃': '🐉',
+    '💀+💀': '☠️',
+    '🐛+🐛': '🪱',
+    '🌱+🌧️': '💧',
+    '🔥+🌧️': '💧',
+    '🌸+🌧️': '💧',
+    '💧+🔥': '💨',
+    '💧+🌱': '🌿',
+    '💧+🌵': '🌊',
+    '💧+💀': '☔',
+    '💧+🌸': '🫧',
+    '💧+🐍': '🦑',
+    '💧+🐔': '🦆',
+    '💧+🐦': '🦢',
+    '💧+🪦': '🕳️',
+    '💧+🌧️': '🌊',
+    '💧+🥀': '🪷',
+    '💧+🧠': '🫗',
+    '💧+💀': '👻',
+    '💧+💧': '🌊',
+    '💧+❄️': '🧊',
+    '❄️+❄️': '❄️❄️',
+    '🧊+🔥': '💧',
+    '🌱+🌱': '🌳',
+    '🌱+🔥': '🌵',
+    '🌱+🐦': '🌿',
+    '🌱+💧': '🌿',
+    '🐛+🌱': '🦋',
+    '🐛+🔥': '🐞',
+    '🐛+🐛': '🪱',
+    '🐣+🌱': '🐥',
+    '🐣+🔥': '🔥🐔',
+    '🐣+🐛': '🐓',
+    '🐣+🐣': '🥚',
+    '🔥+🌱': '🌵',
+    '🔥+🐔': '🔥🐔',
+    '🔥+🔥': '🔥🔥',
+    '🔥+💧': '💨'
+  };
+
+  const emojiList = document.getElementById('emoji-list');
+  const stage = document.getElementById('stage');
+  const toast = document.getElementById('toast');
+  const trash = document.getElementById('trash');
+  const discovered = new Set();
+  let draggedEmoji = null;
+  let offsetX = 0, offsetY = 0;
+  let isOverTrash = false;
+
+  function showToast(message) {
+    toast.textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => {
+      toast.classList.remove('show');
+    }, 2000);
+  }
+
+  function addToEmojiDex(emoji) {
+    if (!discovered.has(emoji)) {
+      discovered.add(emoji);
+      const el = document.createElement('div');
+      el.textContent = emoji;
+      el.className = 'emoji-item';
+
+      if ([...emoji].length > 1) {
+        el.classList.add('combo');
+      }
+
+      el.addEventListener('mousedown', startDragFromSidebar);
+      emojiList.appendChild(el);
+      showToast(`New emoji discovered: ${emoji}`);
+    }
+  }
+
+  function startDragFromSidebar(e) {
+    const emoji = e.target.textContent;
+    const rect = stage.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    spawnEmojiOnStage(emoji, x, y);
+    draggedEmoji = stage.lastElementChild;
+    offsetX = e.offsetX;
+    offsetY = e.offsetY;
+    draggedEmoji.classList.add('dragging');
+    document.addEventListener('mousemove', dragEmoji);
+    document.addEventListener('mouseup', dropEmoji);
+  }
+
+  function startDragFromStage(e) {
+    draggedEmoji = e.target;
+    offsetX = e.offsetX;
+    offsetY = e.offsetY;
+    draggedEmoji.classList.add('dragging');
+    document.addEventListener('mousemove', dragEmoji);
+    document.addEventListener('mouseup', dropEmoji);
+  }
+
+  function dragEmoji(e) {
+    if (!draggedEmoji) return;
+    const rect = stage.getBoundingClientRect();
+    const x = e.clientX - rect.left - offsetX;
+    const y = e.clientY - rect.top - offsetY;
+    
+    draggedEmoji.style.left = `${x}px`;
+    draggedEmoji.style.top = `${y}px`;
+    
+    // Check if over trash
+    const trashRect = trash.getBoundingClientRect();
+    const isOver = e.clientX >= trashRect.left && 
+                  e.clientX <= trashRect.right &&
+                  e.clientY >= trashRect.top &&
+                  e.clientY <= trashRect.bottom;
+    
+    if (isOver !== isOverTrash) {
+      isOverTrash = isOver;
+      trash.classList.toggle('highlight', isOverTrash);
+    }
+  }
+
+  function dropEmoji() {
+    if (!draggedEmoji) return;
+    
+    document.removeEventListener('mousemove', dragEmoji);
+    document.removeEventListener('mouseup', dropEmoji);
+    
+    if (isOverTrash) {
+      draggedEmoji.remove();
+      showToast('Emoji removed!');
+    } else {
+      checkForCombo(draggedEmoji);
+    }
+    
+    draggedEmoji.classList.remove('dragging');
+    draggedEmoji = null;
+    isOverTrash = false;
+    trash.classList.remove('highlight');
+  }
+
+  trash.addEventListener('click', () => {
+    const emojisOnStage = stage.querySelectorAll('.emoji-on-stage');
+    if (emojisOnStage.length === 0) {
+      showToast('Nothing to clear!');
+      return;
+    }
+    emojisOnStage.forEach(e => e.remove());
+    showToast('All emojis cleared!');
+  });
+
+  function spawnEmojiOnStage(emoji, x = null, y = null) {
+    const el = document.createElement('div');
+    el.textContent = emoji;
+    el.className = 'emoji-on-stage';
+
+    if ([...emoji].length > 1) {
+      el.classList.add('combo');
+    }
+
+    el.style.left = (x !== null ? x : Math.random() * (stage.clientWidth - 50)) + 'px';
+    el.style.top = (y !== null ? y : Math.random() * (stage.clientHeight - 50)) + 'px';
+    
+    el.addEventListener('mousedown', startDragFromStage);
+    stage.appendChild(el);
+    return el;
+  }
+
+  function checkForCombo(el) {
+    const others = Array.from(stage.children).filter(e => 
+      e !== el && 
+      e.classList.contains('emoji-on-stage') &&
+      !e.classList.contains('dragging')
+    );
+    
+    for (const other of others) {
+      const rect1 = el.getBoundingClientRect();
+      const rect2 = other.getBoundingClientRect();
+      const dx = rect1.left + rect1.width/2 - (rect2.left + rect2.width/2);
+      const dy = rect1.top + rect1.height/2 - (rect2.top + rect2.height/2);
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      if (distance < 50) {
+        const combo = `${el.textContent}+${other.textContent}`;
+        const reverse = `${other.textContent}+${el.textContent}`;
+        const result = comboMap[combo] || comboMap[reverse];
+        
+        if (result) {
+          const avgX = (rect1.left + rect2.left) / 2 - stage.getBoundingClientRect().left;
+          const avgY = (rect1.top + rect2.top) / 2 - stage.getBoundingClientRect().top;
+          spawnEmojiOnStage(result, avgX, avgY);
+          addToEmojiDex(result);
+          el.remove();
+          other.remove();
+          return;
+        }
+      }
+    }
+  }
+
+  baseEmojis.forEach(addToEmojiDex);
+</script>
+</body>
+</html>
