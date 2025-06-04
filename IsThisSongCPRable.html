@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" href="https://cdn-icons-png.flaticon.com/256/10154/10154290.png" type="image/png">    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Is This Song CPR-able?</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f8ff;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #e74c3c;
+        }
+        
+        .search-box {
+            margin: 20px 0;
+        }
+        
+        input {
+            padding: 10px;
+            width: 60%;
+            border: 2px solid #3498db;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-left: 5px;
+        }
+        
+        button:hover {
+            background: #2980b9;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        
+        .cpr-yes {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #28a745;
+        }
+        
+        .cpr-no {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #dc3545;
+        }
+        
+        .song-list {
+            margin-top: 30px;
+            text-align: left;
+        }
+        
+        .song-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: #eaf2f8;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .song-item:hover {
+            background: #d4e6f1;
+            transform: translateX(5px);
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0,0,0,.3);
+            border-radius: 50%;
+            border-top-color: #3498db;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .bpm-display {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .accuracy-note {
+            font-size: 12px;
+            color: #666;
+            margin-top: 10px;
+        }
+        
+        .correction-box {
+            margin-top: 15px;
+            padding: 10px;
+            background: #fff3cd;
+            border-radius: 5px;
+        }
+        
+        .correction-input {
+            padding: 8px;
+            width: 60px;
+            margin-right: 10px;
+        }
+        
+        .estimated-badge {
+            background: #ffc107;
+            color: #856404;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+            margin-left: 5px;
+        }
+        
+        .saved-badge {
+            background: #28a745;
+            color: white;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Is This Song CPR-able?</h1>
+        <p>Check if a song's BPM matches the CPR rhythm (100-120 BPM)</p>
+        
+        <div class="search-box">
+            <input type="text" id="songInput" placeholder="Search for a song... (e.g. 'Stayin' Alive - Bee Gees')">
+            <button onclick="checkSong()">Check BPM</button>
+        </div>
+        
+        <div id="result" class="result" style="display: none;"></div>
+        <div id="loading" style="display: none;">Searching... <span class="loading"></span></div>
+        
+        <h3>Try these examples:</h3>
+        <div class="song-list" id="songList">
+            <!-- Pre-loaded songs will appear here -->
+        </div>
+    </div>
+
+    <script>
+        // Starter dataset of songs
+        const verifiedCPRSongs = [
+            { title: "Stayin' Alive", artist: "Bee Gees", bpm: 103, verified: true },
+            { title: "Another One Bites the Dust", artist: "Queen", bpm: 110, verified: true },
+            { title: "Crazy in Love", artist: "Beyoncé", bpm: 99, verified: true },
+            { title: "Hips Don't Lie", artist: "Shakira", bpm: 100, verified: true },
+            
+            // Current Hits
+            { title: "Not Like Us", artist: "Kendrick Lamar", bpm: 101, verified: true },
+            { title: "Flowers", artist: "Miley Cyrus", bpm: 118, verified: true },
+            { title: "Kill Bill", artist: "SZA", bpm: 87, verified: true },
+            { title: "Anti-Hero", artist: "Taylor Swift", bpm: 97, verified: true },
+            { title: "Unholy", artist: "Sam Smith", bpm: 105, verified: true },
+            
+            // Pop Essentials
+            { title: "Uptown Funk", artist: "Bruno Mars", bpm: 115, verified: true },
+            { title: "Shape of You", artist: "Ed Sheeran", bpm: 96, verified: true },
+            { title: "Blinding Lights", artist: "The Weeknd", bpm: 171, verified: true },
+            { title: "Dance Monkey", artist: "Tones and I", bpm: 98, verified: true },
+            
+            // Hip-Hop/Rap
+            { title: "SICKO MODE", artist: "Travis Scott", bpm: 154, verified: true },
+            { title: "God's Plan", artist: "Drake", bpm: 77, verified: true },
+            { title: "Lose Yourself", artist: "Eminem", bpm: 171, verified: true },
+            { title: "Hotline Bling", artist: "Drake", bpm: 136, verified: true },
+            
+            // Rock Classics
+            { title: "Sweet Child O'Mine", artist: "Guns N' Roses", bpm: 125, verified: true },
+            { title: "Livin' on a Prayer", artist: "Bon Jovi", bpm: 122, verified: true },
+            { title: "Don't Stop Believin'", artist: "Journey", bpm: 121, verified: true },
+            { title: "Eye of the Tiger", artist: "Survivor", bpm: 109, verified: true },
+            
+            // More Popular Songs
+            { title: "Baby Shark", artist: "Pinkfong", bpm: 115, verified: true },
+            { title: "Despacito", artist: "Luis Fonsi", bpm: 89, verified: true },
+            { title: "Old Town Road", artist: "Lil Nas X", bpm: 136, verified: true },
+            { title: "Bad Guy", artist: "Billie Eilish", bpm: 135, verified: true },
+            { title: "Levitating", artist: "Dua Lipa", bpm: 103, verified: true },
+            { title: "Watermelon Sugar", artist: "Harry Styles", bpm: 95, verified: true },
+            { title: "Don't Start Now", artist: "Dua Lipa", bpm: 123, verified: true },
+            { title: "Circles", artist: "Post Malone", bpm: 120, verified: true },
+            { title: "Sunflower", artist: "Post Malone", bpm: 90, verified: true },
+            { title: "Thank U, Next", artist: "Ariana Grande", bpm: 107, verified: true },
+            { title: "7 rings", artist: "Ariana Grande", bpm: 140, verified: true },
+            { title: "Shallow", artist: "Lady Gaga", bpm: 96, verified: true },
+            { title: "Perfect", artist: "Ed Sheeran", bpm: 95, verified: true },
+            { title: "Havana", artist: "Camila Cabello", bpm: 105, verified: true },
+            { title: "Senorita", artist: "Shawn Mendes", bpm: 117, verified: true },
+            { title: "Memories", artist: "Maroon 5", bpm: 91, verified: true },
+            { title: "Sugar", artist: "Maroon 5", bpm: 120, verified: true },
+            { title: "Closer", artist: "The Chainsmokers", bpm: 95, verified: true },
+            { title: "Something Just Like This", artist: "The Chainsmokers", bpm: 103, verified: true },
+            { title: "Roses", artist: "SAINt JHN", bpm: 105, verified: true },
+            { title: "Don't Let Me Down", artist: "The Chainsmokers", bpm: 150, verified: true },
+            { title: "Cheap Thrills", artist: "Sia", bpm: 90, verified: true },
+            { title: "Chandelier", artist: "Sia", bpm: 110, verified: true },
+            { title: "Titanium", artist: "David Guetta", bpm: 126, verified: true },
+            { title: "Wake Me Up", artist: "Avicii", bpm: 124, verified: true },
+            { title: "Levels", artist: "Avicii", bpm: 126, verified: true },
+            { title: "Faded", artist: "Alan Walker", bpm: 90, verified: true },
+            { title: "Alone", artist: "Alan Walker", bpm: 95, verified: true },
+{ title: "Get Lucky", artist: "Daft Punk", bpm: 116, verified: true },
+{ title: "Lose Yourself to Dance", artist: "Daft Punk", bpm: 100, verified: true },
+{ title: "Everything I Wanted", artist: "Billie Eilish", bpm: 120, verified: true },
+{ title: "The Days", artist: "Avicii", bpm: 127, verified: true },
+{ title: "Uptown Funk", artist: "Mark Ronson ft. Bruno Mars", bpm: 115, verified: true },
+{ title: "Just Dance", artist: "Lady Gaga ft. Colby O'Donis", bpm: 119, verified: true },
+{ title: "Don't Stop the Music", artist: "Rihanna", bpm: 123, verified: true },
+{ title: "Loba", artist: "Shakira", bpm: 120, verified: true },
+{ title: "Bad Romance", artist: "Lady Gaga", bpm: 119, verified: true },
+{ title: "Don't Wanna Go Home", artist: "Jason Derulo", bpm: 120, verified: true },
+{ title: "Dancing Tonight", artist: "Kat DeLuna ft. Fo Onassis", bpm: 120, verified: true },
+{ title: "And We Danced", artist: "Macklemore ft. Ziggy Stardust", bpm: 120, verified: true },
+{ title: "Like a G6", artist: "Far East Movement ft. The Cataracs, DEV", bpm: 125, verified: true },
+{ title: "What Makes You Beautiful", artist: "One Direction", bpm: 123, verified: true },
+{ title: "Last Friday Night (T.G.I.F.)", artist: "Katy Perry", bpm: 120, verified: true },
+{ title: "California Gurls", artist: "Katy Perry ft. Snoop Dogg", bpm: 125, verified: true },
+{ title: "If We Ever Meet Again", artist: "Timbaland ft. Katy Perry", bpm: 120, verified: true },
+{ title: "Up in the Air", artist: "Thirty Seconds To Mars", bpm: 120, verified: true },
+{ title: "Domino", artist: "Jessie J", bpm: 127, verified: true },
+{ title: "More Than Friends", artist: "INNA ft. Daddy Yankee", bpm: 120, verified: true },
+{ title: "Jump", artist: "Madonna", bpm: 120, verified: true },
+{ title: "Lost in Your Light", artist: "Dua Lipa ft. Miguel", bpm: 120, verified: true },
+{ title: "Teenage Dream", artist: "Katy Perry", bpm: 120, verified: true },
+{ title: "Respect", artist: "Aretha Franklin", bpm: 120, verified: true },
+{ title: "All I Wanna Do", artist: "Sheryl Crow", bpm: 120, verified: true },
+{ title: "Lucky Star", artist: "Madonna", bpm: 117, verified: true },
+{ title: "Borderline", artist: "Madonna", bpm: 120, verified: true },
+{ title: "Deeper & Deeper", artist: "Madonna", bpm: 120, verified: true },
+{ title: "Everybody", artist: "Madonna", bpm: 120, verified: true },
+{ title: "Amazing", artist: "Seal", bpm: 120, verified: true },
+{ title: "Radio", artist: "The Corrs", bpm: 120, verified: true },
+{ title: "All Right Now", artist: "Free", bpm: 120, verified: true },
+{ title: "Changes", artist: "2Pac", bpm: 111, verified: true },
+{ title: "Over Yet", artist: "Hayley Williams", bpm: 120, verified: true },
+{ title: "Say So", artist: "Doja Cat", bpm: 111, verified: true },
+{ title: "Hollaback Girl", artist: "Gwen Stefani", bpm: 110, verified: true },
+{ title: "Music", artist: "Madonna", bpm: 120, verified: true },
+{ title: "Sour Candy", artist: "Lady Gaga & Blackpink", bpm: 120, verified: true },
+{ title: "Edge of Seventeen", artist: "Stevie Nicks", bpm: 111, verified: true },
+{ title: "Bring on the Night", artist: "The Police", bpm: 110, verified: true },
+{ title: "Every Little Thing She Does Is Magic", artist: "The Police", bpm: 100, verified: true },
+{ title: "Dreams", artist: "Fleetwood Mac", bpm: 100, verified: true },
+{ title: "Shape of You", artist: "Ed Sheeran", bpm: 96, verified: true },
+{ title: "Californication", artist: "Red Hot Chili Peppers", bpm: 100, verified: true },
+{ title: "Get Busy", artist: "Sean Paul", bpm: 100, verified: true },
+{ title: "Lust for Life", artist: "Iggy Pop", bpm: 102, verified: true },
+{ title: "AA", artist: "Walker Hayes", bpm: 104, verified: true },
+{ title: "Numb/Encore", artist: "Jay Z and Linkin Park", bpm: 107, verified: true },
+{ title: "Grenade", artist: "Bruno Mars", bpm: 110, verified: true },
+{ title: "Walking on Sunshine", artist: "Katrina and the Waves", bpm: 110, verified: true },
+{ title: "Toxicity", artist: "System Of A Down", bpm: 112, verified: true },
+{ title: "Gimme More", artist: "Britney Spears", bpm: 113, verified: true },
+{ title: "Strong", artist: "Kelly Clarkson", bpm: 116, verified: true },
+{ title: "Run Like Hell", artist: "Pink Floyd", bpm: 117, verified: true },
+{ title: "It's My Life", artist: "Bon Jovi", bpm: 120, verified: true },
+{ title: "Don't Stop the Music", artist: "Rihanna", bpm: 123, verified: true },
+{ title: "Wake Me Up", artist: "Avicii", bpm: 124, verified: true },
+{ title: "Raise Your Glass", artist: "P!nk", bpm: 125, verified: true },
+{ title: "Run The World (Girls)", artist: "Beyoncé", bpm: 125, verified: true },
+{ title: "Bad Habits", artist: "Ed Sheeran", bpm: 125, verified: true },
+{ title: "Radio Ga Ga", artist: "Queen", bpm: 112, verified: true },
+{ title: "All the Single Ladies", artist: "Beyoncé", bpm: 120, verified: true },
+{ title: "B2b", artist: "Charli XCX", bpm: 116, verified: true },
+{ title: "Good Luck, Babe!", artist: "Chappell Roan", bpm: 117, verified: true },
+{ title: "911", artist: "Lady Gaga", bpm: 116, verified: true },
+{ title: "Wasted Love", artist: "JJ", bpm: 133, verified: true },
+{ title: "Maman", artist: "Louane", bpm: 88, verified: true },
+{ title: "The Bird", artist: "Morris Day & The Time", bpm: 120, verified: true },
+{ title: "Get Down on It", artist: "Kool & the Gang", bpm: 110, verified: true },
+{ title: "Walk the Dinosaur", artist: "Was (Not Was)", bpm: 120, verified: true },
+{ title: "Apache", artist: "Sugarhill Gang", bpm: 111, verified: true },
+{ title: "Cool", artist: "Morris Day & The Time", bpm: 120, verified: true },
+{ title: "Jungle Love", artist: "Morris Day & The Time", bpm: 120, verified: true },
+{ title: "More Bounce to the Ounce", artist: "Zapp", bpm: 120, verified: true },
+{ title: "Oops Up Side Your Head", artist: "The Gap Band", bpm: 120, verified: true },
+{ title: "Early in the Morning", artist: "The Gap Band", bpm: 120, verified: true },
+{ title: "Funk You Up", artist: "The Sequence", bpm: 120, verified: true },
+{ title: "Cutie Pie", artist: "One Way", bpm: 120, verified: true },
+{ title: "Getaway", artist: "Earth, Wind & Fire", bpm: 120, verified: true },
+{ title: "Trommeltanz (Din Daa Daa)", artist: "George Kranz", bpm: 120, verified: true },
+{ title: "The Wheels on the Bus", artist: "Traditional", bpm: 120, verified: true },
+{ title: "What the Hell Just Happened", artist: "Remember Monday", bpm: 136, verified: true },
+{ title: "Bara Badu Batsu", artist: "KAJ", bpm: 106, verified: true },
+{ title: "The Code", artist: "Nemo", bpm: 106, verified: true },
+{ title: "Tattoo", artist: "Loreen", bpm: 106, verified: true },
+{ title: "Stefania", artist: "Kalush Orchestra", bpm: 106, verified: true }
+        ];
+
+        // Load user-corrected songs from localStorage
+        let userCorrectedSongs = JSON.parse(localStorage.getItem('userCorrectedSongs')) || [];
+
+        // Combine verified and user-corrected songs
+        function getAllSongs() {
+            return [...verifiedCPRSongs, ...userCorrectedSongs];
+        }
+
+        // Load example songs on page load
+        window.onload = function() {
+            const songList = document.getElementById('songList');
+            getAllSongs().forEach(song => {
+                addSongToExampleList(song);
+            });
+        };
+
+        // Add song to the example list
+        function addSongToExampleList(song) {
+            const songList = document.getElementById('songList');
+            const songItem = document.createElement('div');
+            songItem.className = 'song-item';
+            songItem.innerHTML = `${song.title} - ${song.artist}${song.saved ? ' <span class="saved-badge">SAVED</span>' : ''}`;
+            songItem.onclick = () => showResult(song);
+            songList.appendChild(songItem);
+        }
+
+        // Check BPM - searches local dataset first
+        function checkSong() {
+            const query = document.getElementById('songInput').value.trim();
+            if (!query) return alert("Please enter a song name!");
+            
+            const resultDiv = document.getElementById('result');
+            const loadingDiv = document.getElementById('loading');
+            resultDiv.style.display = 'none';
+            loadingDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                // Parse song and artist from query (format: "Song - Artist")
+                let songTitle = query;
+                let artistName = "";
+                
+                if (query.includes('-')) {
+                    const parts = query.split('-').map(part => part.trim());
+                    songTitle = parts[0];
+                    artistName = parts.length > 1 ? parts[1] : "";
+                }
+                
+                // Search in all songs (verified + user corrected)
+                const allSongs = getAllSongs();
+                const foundSong = allSongs.find(song => 
+                    song.title.toLowerCase() === songTitle.toLowerCase() && 
+                    (artistName === "" || song.artist.toLowerCase() === artistName.toLowerCase())
+                );
+                
+                if (foundSong) {
+                    showResult(foundSong);
+                } else {
+                    // If not found, create estimated entry
+                    const estimatedBPM = estimateBPM(songTitle);
+                    const estimatedSong = {
+                        title: songTitle,
+                        artist: artistName || "Unknown Artist",
+                        bpm: estimatedBPM,
+                        verified: false,
+                        saved: false
+                    };
+                    showResult(estimatedSong);
+                }
+                loadingDiv.style.display = 'none';
+            }, 500); // Simulate search delay
+        }
+
+        // Simple BPM estimation for unknown songs
+        function estimateBPM(songTitle) {
+            // This is a mock estimation - in a real app you'd use audio analysis
+            const seed = songTitle.length * 7;
+            const baseBPM = 90 + (seed % 60); // Returns BPM between 90-150
+            return Math.round(baseBPM * 10) / 10; // Round to 1 decimal
+        }
+
+        // Display the result
+        function showResult(song) {
+            const resultDiv = document.getElementById('result');
+            const isCPRable = song.bpm >= 100 && song.bpm <= 120;
+            
+            resultDiv.innerHTML = `
+                <h2>${song.title}${song.artist ? ' - ' + song.artist : ''}${song.saved ? ' <span class="saved-badge">SAVED</span>' : ''}</h2>
+                <div class="bpm-display">${song.bpm} BPM ${!song.verified ? '<span class="estimated-badge">ESTIMATED</span>' : ''}</div>
+                <p><strong>CPR-able?</strong> ${isCPRable ? '✅ Yes! Perfect for CPR!' : '❌ No! ' + 
+                    (song.bpm < 100 ? 'Too slow!' : 'Too fast!')}</p>
+                ${isCPRable ? 
+                    '<p>💡 This song matches the recommended CPR rhythm (100-120 BPM). Perfect for chest compressions!</p>' : 
+                    '<p>🚨 For proper CPR, use a song between 100-120 BPM. Keep searching!</p>'}
+                
+                <div class="correction-box">
+                    <p>BPM wrong? Submit the accurate BPM here!</p>
+                    <input type="number" class="correction-input" id="correctedBPM" placeholder="Correct BPM" min="50" max="300" value="${song.bpm}">
+                    <button onclick="submitCorrection('${escapeString(song.title)}', '${escapeString(song.artist)}', ${song.bpm})">Submit</button>
+                </div>
+            `;
+            
+            resultDiv.className = `result ${isCPRable ? 'cpr-yes' : 'cpr-no'}`;
+            resultDiv.style.display = 'block';
+        }
+
+        // Helper function to escape strings for HTML
+        function escapeString(str) {
+            if (!str) return '';
+            return str.replace(/'/g, "\\'");
+        }
+
+        // Handle BPM corrections
+        function submitCorrection(title, artist, currentBpm) {
+            const correctedBPMInput = document.getElementById('correctedBPM');
+            const correctedBPM = parseFloat(correctedBPMInput.value);
+            
+            if (isNaN(correctedBPM)) {
+                alert("Please enter a valid BPM number!");
+                return;
+            }
+            
+            if (correctedBPM === currentBpm) {
+                alert("This is the same as the current BPM!");
+                return;
+            }
+            
+            // Check if this song already exists in user corrections
+            const existingIndex = userCorrectedSongs.findIndex(
+                song => song.title === title && song.artist === artist
+            );
+            
+            if (existingIndex >= 0) {
+                // Update existing correction
+                userCorrectedSongs[existingIndex].bpm = correctedBPM;
+            } else {
+                // Add new correction
+                userCorrectedSongs.push({
+                    title: title,
+                    artist: artist,
+                    bpm: correctedBPM,
+                    verified: false,
+                    saved: true
+                });
+            }
+            
+            // Save to localStorage
+            localStorage.setItem('userCorrectedSongs', JSON.stringify(userCorrectedSongs));
+            
+            // Update the UI
+            const resultDiv = document.getElementById('result');
+            const isCPRable = correctedBPM >= 100 && correctedBPM <= 120;
+            
+            resultDiv.innerHTML = `
+                <h2>${title}${artist ? ' - ' + artist : ''} <span class="saved-badge">SAVED</span></h2>
+                <div class="bpm-display">${correctedBPM} BPM</div>
+                <p><strong>CPR-able?</strong> ${isCPRable ? '✅ Yes! Perfect for CPR!' : '❌ No! ' + 
+                    (correctedBPM < 100 ? 'Too slow!' : 'Too fast!')}</p>
+                ${isCPRable ? 
+                    '<p>💡 This song matches the recommended CPR rhythm (100-120 BPM). Perfect for chest compressions!</p>' : 
+                    '<p>🚨 For proper CPR, use a song between 100-120 BPM. Keep searching!</p>'}
+                <p>Thank you for your correction! This has been saved.</p>
+            `;
+            
+            resultDiv.className = `result ${isCPRable ? 'cpr-yes' : 'cpr-no'}`;
+            
+            // Add to example list if it's a new song
+            if (existingIndex === -1) {
+                addSongToExampleList(userCorrectedSongs[userCorrectedSongs.length - 1]);
+            }
+        }
+    </script>
+</body>
+</html>
