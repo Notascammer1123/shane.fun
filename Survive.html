@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" href="https://images.emojiterra.com/twitter/v12/512px/1fa93.png" type="image/png"><meta charset="UTF-8">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Survival Guy</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #e0f7fa;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .game-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #b2ebf2;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.3);
+        }
+        .status-bar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+            background-color: #4dd0e1;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .stat {
+            background-color: #26a69a;
+            padding: 8px;
+            border-radius: 5px;
+            color: white;
+        }
+        .game-area {
+            min-height: 150px;
+            background-color: #80deea;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .inventory {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            background-color: #4db6ac;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .inventory-item {
+            font-size: 24px;
+            background-color: #00897b;
+            padding: 5px 10px;
+            border-radius: 5px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .inventory-count {
+            font-size: 16px;
+            background-color: #00695c;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+        .actions {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 12px;
+            font-size: 16px;
+            background-color: #26a69a;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background-color: #00897b;
+            transform: translateY(-2px);
+        }
+        button:disabled {
+            background-color: #b2dfdb;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .time-indicator {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .day {
+            color: #ff8f00;
+        }
+        .night {
+            color: #0d47a1;
+        }
+        .event-message {
+            font-weight: bold;
+            margin: 10px 0;
+            padding: 12px;
+            border-radius: 5px;
+            animation: fadeIn 0.5s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .danger {
+            background-color: #ffcdd2;
+            color: #c62828;
+            border-left: 5px solid #c62828;
+        }
+        .good {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+            border-left: 5px solid #2e7d32;
+        }
+        .neutral {
+            background-color: #e0e0e0;
+            color: #424242;
+            border-left: 5px solid #424242;
+        }
+        .crafting {
+            background-color: #4db6ac;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .crafting h3 {
+            margin-top: 0;
+            color: white;
+        }
+        .recipe {
+            background-color: #00897b;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .recipe-items {
+            display: flex;
+            gap: 5px;
+        }
+        .tab-container {
+            display: flex;
+            margin-bottom: 15px;
+        }
+        .tab {
+            padding: 10px 20px;
+            background-color: #4db6ac;
+            cursor: pointer;
+            border-radius: 5px 5px 0 0;
+            margin-right: 5px;
+        }
+        .tab.active {
+            background-color: #00897b;
+            color: white;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .progress-container {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+        .progress-bar {
+            height: 20px;
+            border-radius: 5px;
+            background-color: #26a69a;
+            width: 0%;
+            transition: width 0.5s;
+        }
+        .unlocked {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .game-over {
+            font-size: 24px;
+            font-weight: bold;
+            color: #c62828;
+            margin: 20px 0;
+        }
+        .stats {
+            background-color: #4db6ac;
+            padding: 10px;
+            border-radius: 5px;
+            color: white;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Shane Island Survival</h1>
+        
+        <div class="stats">
+            Day: <span id="day-count">1</span> | 
+            Health: <span id="health">100</span>% | 
+            Energy: <span id="energy">100</span>% | 
+            Hunger: <span id="hunger">100</span>% | 
+            Morale: <span id="morale">100</span>%
+        </div>
+        
+        <div class="time-indicator">
+            <span id="time-icon">☀️</span>
+            <span id="time-of-day" class="day">Day 1 - Morning</span>
+            <span id="weather-icon"></span>
+        </div>
+        
+        <div class="progress-container">
+            <div class="progress-bar" id="time-progress"></div>
+        </div>
+        
+        <div class="game-area" id="game-area">
+            <p>You wake up on a raft near a deserted island. Survive as long as you can!</p>
+            <p id="area-description">You see palm trees 🌴 in the distance and bananas 🍌 on the shore.</p>
+            <div id="event-message" class="event-message" style="display: none;"></div>
+        </div>
+        
+        <div class="tab-container">
+            <div class="tab active" onclick="switchTab('actions')">Actions</div>
+            <div class="tab" onclick="switchTab('crafting')">Crafting</div>
+            <div class="tab" onclick="switchTab('inventory')">Inventory</div>
+        </div>
+        
+        <div class="tab-content active" id="actions-tab">
+            <div class="actions">
+                <button id="explore-btn" onclick="explore()">Explore Island</button>
+                <button id="gather-btn" onclick="gatherResources()">Gather Resources</button>
+                <button id="hunt-btn" onclick="hunt()" disabled>Hunt/Fish</button>
+                <button id="build-btn" onclick="openCrafting()">Build/Craft</button>
+                <button id="rest-btn" onclick="rest()">Rest</button>
+                <button id="eat-btn" onclick="eat()" disabled>Eat</button>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="crafting-tab">
+            <div class="crafting">
+                <h3>Crafting Recipes</h3>
+                <div id="crafting-recipes"></div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="inventory-tab">
+            <div class="inventory" id="inventory">
+                <div class="inventory-item">🛶 Raft <span class="inventory-count">1</span></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Enhanced Game State
+        const gameState = {
+            day: 1,
+            timeSegment: 0, // 0-3 (morning, afternoon, evening, night)
+            health: 100,
+            energy: 100,
+            hunger: 100,
+            morale: 100,
+            inventory: {
+                '🛶': { name: 'Raft', count: 1 }
+            },
+            resources: {
+                '🌴': { name: 'Palm Tree', count: 0 },
+                '🍌': { name: 'Banana', count: 0 },
+                '🪵': { name: 'Wood', count: 0 },
+                '🪨': { name: 'Stone', count: 0 },
+                '🥥': { name: 'Coconut', count: 0 },
+                '🎣': { name: 'Fishing Rod', count: 0 },
+                '🏹': { name: 'Bow', count: 0 },
+                '🐟': { name: 'Fish', count: 0 },
+                '🍖': { name: 'Meat', count: 0 },
+                '🔥': { name: 'Campfire', count: 0 },
+                '🏕️': { name: 'Basic Camp', count: 0 },
+                '🛖': { name: 'Sturdy Shelter', count: 0 },
+                '🚤': { name: 'Boat', count: 0 },
+                '💧': { name: 'Fresh Water', count: 0 },
+                '🧵': { name: 'Fiber', count: 0 },
+                '🧶': { name: 'Rope', count: 0 }
+            },
+            unlockedRecipes: ['basic-camp', 'campfire'],
+            discoveredAreas: ['beach'],
+            currentWeather: 'clear',
+            gameOver: false,
+            stats: {
+                daysSurvived: 0,
+                itemsCrafted: 0,
+                resourcesGathered: 0,
+                eventsSurvived: 0
+            }
+        };
+
+        // Crafting Recipes
+        const craftingRecipes = {
+            'campfire': {
+                name: 'Campfire',
+                emoji: '🔥',
+                description: 'Provides light and warmth at night',
+                requirements: { '🪵': 5, '🪨': 3 },
+                unlocks: ['cook-food'],
+                action: () => {
+                    showEvent('Campfire built! You can now cook food and feel safer at night.', 'good');
+                    gameState.resources['🔥'].count++;
+                    gameState.morale = Math.min(100, gameState.morale + 10);
+                }
+            },
+            'basic-camp': {
+                name: 'Basic Camp',
+                emoji: '🏕️',
+                description: 'Basic shelter for protection',
+                requirements: { '🌴': 3, '🪵': 5, '🧶': 2 },
+                unlocks: ['sturdy-shelter'],
+                action: () => {
+                    showEvent('Basic camp built! You now have shelter from the elements.', 'good');
+                    gameState.resources['🏕️'].count++;
+                    gameState.morale = Math.min(100, gameState.morale + 15);
+                }
+            },
+            'sturdy-shelter': {
+                name: 'Sturdy Shelter',
+                emoji: '🛖',
+                description: 'Better protection from storms and creatures',
+                requirements: { '🪵': 10, '🧶': 5, '🪨': 8 },
+                unlocks: ['boat'],
+                action: () => {
+                    showEvent('Sturdy shelter built! You feel much safer now.', 'good');
+                    gameState.resources['🛖'].count++;
+                    gameState.morale = Math.min(100, gameState.morale + 25);
+                }
+            },
+            'fishing-rod': {
+                name: 'Fishing Rod',
+                emoji: '🎣',
+                description: 'Catch fish from the ocean',
+                requirements: { '🪵': 3, '🧶': 2 },
+                unlocks: [],
+                action: () => {
+                    showEvent('Fishing rod crafted! You can now try to catch fish.', 'good');
+                    gameState.resources['🎣'].count++;
+                    document.getElementById('hunt-btn').disabled = false;
+                }
+            },
+            'bow': {
+                name: 'Bow',
+                emoji: '🏹',
+                description: 'Hunt animals for food',
+                requirements: { '🪵': 4, '🧶': 3 },
+                unlocks: [],
+                action: () => {
+                    showEvent('Bow crafted! You can now hunt for food.', 'good');
+                    gameState.resources['🏹'].count++;
+                    document.getElementById('hunt-btn').disabled = false;
+                }
+            },
+            'rope': {
+                name: 'Rope',
+                emoji: '🧶',
+                description: 'Essential for many crafting recipes',
+                requirements: { '🧵': 5 },
+                unlocks: ['basic-camp', 'fishing-rod', 'bow'],
+                action: () => {
+                    showEvent('Rope crafted! Useful for many things.', 'neutral');
+                    gameState.resources['🧶'].count++;
+                }
+            },
+            'boat': {
+                name: 'Boat',
+                emoji: '🚤',
+                description: 'Escape the island (win condition)',
+                requirements: { '🪵': 20, '🧶': 10, '🪨': 5 },
+                unlocks: [],
+                action: () => {
+                    showEvent('BOAT BUILT! You can finally escape the island!', 'good');
+                    gameState.resources['🚤'].count++;
+                    endGame(true);
+                }
+            }
+        };
+
+        // Time segments (each day has 4 segments)
+        const timeSegments = [
+            { name: "Morning", icon: "🌄", canExplore: true, canGather: true },
+            { name: "Afternoon", icon: "☀️", canExplore: true, canGather: true },
+            { name: "Evening", icon: "🌇", canExplore: true, canGather: true },
+            { name: "Night", icon: "🌙", canExplore: false, canGather: false }
+        ];
+
+        // Weather system
+        const weatherTypes = [
+            { type: "clear", icon: "☀️", effects: { energy: 0, health: 0 } },
+            { type: "rainy", icon: "🌧️", effects: { energy: -5, health: -5 } },
+            { type: "stormy", icon: "⛈️", effects: { energy: -10, health: -15 } },
+            { type: "hot", icon: "🔥", effects: { energy: -15, health: -5 } },
+            { type: "windy", icon: "🌬️", effects: { energy: -5, health: 0 } }
+        ];
+
+        // Areas to explore
+        const islandAreas = {
+            'beach': {
+                name: "Beach",
+                description: "Sandy shore with driftwood and occasional seafood",
+                resources: ['🪵', '🥥', '🐟'],
+                danger: 10
+            },
+            'forest': {
+                name: "Forest",
+                description: "Dense palm trees and tropical plants",
+                resources: ['🌴', '🍌', '🧵'],
+                danger: 30,
+                requirements: { 'energy': 30 }
+            },
+            'hills': {
+                name: "Hills",
+                description: "Rocky terrain with good vantage points",
+                resources: ['🪨', '🧵'],
+                danger: 40,
+                requirements: { 'energy': 50 }
+            },
+            'lagoon': {
+                name: "Lagoon",
+                description: "Calm waters full of fish",
+                resources: ['🐟', '💧'],
+                danger: 20,
+                requirements: { 'energy': 40 }
+            },
+            'caves': {
+                name: "Caves",
+                description: "Dark and mysterious, but may contain useful items",
+                resources: ['🪨', '🍖'],
+                danger: 60,
+                requirements: { 'energy': 60, '🔥': 1 }
+            }
+        };
+
+        // Food items and their effects
+        const foodItems = {
+            '🍌': { health: 10, hunger: 20, energy: 5 },
+            '🥥': { health: 15, hunger: 25, energy: 10 },
+            '🐟': { health: 25, hunger: 40, energy: 15 },
+            '🍖': { health: 30, hunger: 50, energy: 20 }
+        };
+
+        // DOM elements
+        const dayCountEl = document.getElementById('day-count');
+        const healthEl = document.getElementById('health');
+        const energyEl = document.getElementById('energy');
+        const hungerEl = document.getElementById('hunger');
+        const moraleEl = document.getElementById('morale');
+        const timeOfDayEl = document.getElementById('time-of-day');
+        const timeIconEl = document.getElementById('time-icon');
+        const weatherIconEl = document.getElementById('weather-icon');
+        const timeProgressEl = document.getElementById('time-progress');
+        const gameAreaEl = document.getElementById('game-area');
+        const areaDescriptionEl = document.getElementById('area-description');
+        const eventMessageEl = document.getElementById('event-message');
+        const inventoryEl = document.getElementById('inventory');
+        const craftingRecipesEl = document.getElementById('crafting-recipes');
+        const exploreBtn = document.getElementById('explore-btn');
+        const gatherBtn = document.getElementById('gather-btn');
+        const huntBtn = document.getElementById('hunt-btn');
+        const buildBtn = document.getElementById('build-btn');
+        const restBtn = document.getElementById('rest-btn');
+        const eatBtn = document.getElementById('eat-btn');
+
+        // Update the game display
+        function updateDisplay() {
+            dayCountEl.textContent = gameState.day;
+            healthEl.textContent = gameState.health;
+            energyEl.textContent = gameState.energy;
+            hungerEl.textContent = gameState.hunger;
+            moraleEl.textContent = gameState.morale;
+            
+            const currentTime = timeSegments[gameState.timeSegment];
+            timeOfDayEl.textContent = `Day ${gameState.day} - ${currentTime.name}`;
+            timeIconEl.textContent = currentTime.icon;
+            weatherIconEl.textContent = weatherTypes.find(w => w.type === gameState.currentWeather).icon;
+            
+            // Update time progress
+            timeProgressEl.style.width = `${(gameState.timeSegment + 1) * 25}%`;
+            
+            // Update action buttons based on time
+            exploreBtn.disabled = !currentTime.canExplore || gameState.energy < 20;
+            gatherBtn.disabled = !currentTime.canGather || gameState.energy < 15;
+            
+            // Update inventory display
+            inventoryEl.innerHTML = '';
+            for (const [key, item] of Object.entries(gameState.inventory)) {
+                if (item.count > 0) {
+                    const itemEl = document.createElement('div');
+                    itemEl.className = 'inventory-item';
+                    itemEl.innerHTML = `${key} ${item.name} <span class="inventory-count">${item.count}</span>`;
+                    inventoryEl.appendChild(itemEl);
+                }
+            }
+            
+            // Add resources to inventory display
+            for (const [key, resource] of Object.entries(gameState.resources)) {
+                if (resource.count > 0) {
+                    const resourceEl = document.createElement('div');
+                    resourceEl.className = 'inventory-item';
+                    resourceEl.innerHTML = `${key} ${resource.name} <span class="inventory-count">${resource.count}</span>`;
+                    inventoryEl.appendChild(resourceEl);
+                }
+            }
+            
+            // Enable/disable eat button if food available
+            const hasFood = Object.entries(gameState.resources).some(
+                ([key, item]) => foodItems[key] && item.count > 0
+            );
+            eatBtn.disabled = !hasFood;
+            
+            // Update crafting recipes
+            updateCraftingDisplay();
+        }
+
+        // Update crafting recipes display
+        function updateCraftingDisplay() {
+            craftingRecipesEl.innerHTML = '';
+            
+            gameState.unlockedRecipes.forEach(recipeKey => {
+                const recipe = craftingRecipes[recipeKey];
+                const recipeEl = document.createElement('div');
+                recipeEl.className = 'recipe';
+                
+                // Check if requirements are met
+                let canCraft = true;
+                let requirementsHtml = '';
+                
+                for (const [item, count] of Object.entries(recipe.requirements)) {
+                    const hasEnough = gameState.resources[item]?.count >= count;
+                    requirementsHtml += `<span style="${hasEnough ? '' : 'color: #ffcdd2;'}">${item}×${count}</span> `;
+                    if (!hasEnough) canCraft = false;
+                }
+                
+                recipeEl.innerHTML = `
+                    <div>
+                        <strong>${recipe.emoji} ${recipe.name}</strong><br>
+                        <small>${recipe.description}</small>
+                    </div>
+                    <div class="recipe-items">${requirementsHtml}</div>
+                    <button onclick="craftItem('${recipeKey}')" ${canCraft ? '' : 'disabled'}>Craft</button>
+                `;
+                
+                if (canCraft) {
+                    recipeEl.classList.add('unlocked');
+                }
+                
+                craftingRecipesEl.appendChild(recipeEl);
+            });
+        }
+
+        // Craft an item
+        function craftItem(recipeKey) {
+            const recipe = craftingRecipes[recipeKey];
+            
+            // Verify requirements again (in case inventory changed)
+            for (const [item, count] of Object.entries(recipe.requirements)) {
+                if (gameState.resources[item]?.count < count) {
+                    showEvent(`Not enough ${gameState.resources[item].name} to craft!`, 'danger');
+                    return;
+                }
+            }
+            
+            // Deduct resources
+            for (const [item, count] of Object.entries(recipe.requirements)) {
+                gameState.resources[item].count -= count;
+            }
+            
+            // Perform the crafting action
+            recipe.action();
+            gameState.stats.itemsCrafted++;
+            
+            // Unlock new recipes if any
+            if (recipe.unlocks && recipe.unlocks.length > 0) {
+                recipe.unlocks.forEach(newRecipe => {
+                    if (!gameState.unlockedRecipes.includes(newRecipe)) {
+                        gameState.unlockedRecipes.push(newRecipe);
+                        showEvent(`New recipe unlocked: ${craftingRecipes[newRecipe].name}!`, 'good');
+                    }
+                });
+            }
+            
+            updateDisplay();
+        }
+
+        // Explore the island
+        function explore() {
+            if (gameState.energy < 20) {
+                showEvent("You're too tired to explore right now.", 'danger');
+                return;
+            }
+            
+            // Energy cost
+            gameState.energy = Math.max(0, gameState.energy - 15);
+            gameState.hunger = Math.max(0, gameState.hunger - 10);
+            
+            // Discover new areas (if any left)
+            const undiscoveredAreas = Object.keys(islandAreas).filter(
+                area => !gameState.discoveredAreas.includes(area)
+            );
+            
+            if (undiscoveredAreas.length > 0 && Math.random() < 0.5) {
+                const newArea = undiscoveredAreas[Math.floor(Math.random() * undiscoveredAreas.length)];
+                const area = islandAreas[newArea];
+                
+                // Check requirements
+                let canAccess = true;
+                if (area.requirements) {
+                    for (const [req, value] of Object.entries(area.requirements)) {
+                        if (req in gameState.resources) {
+                            if (gameState.resources[req].count < value) canAccess = false;
+                        } else if (req in gameState) {
+                            if (gameState[req] < value) canAccess = false;
+                        }
+                    }
+                }
+                
+                if (canAccess) {
+                    gameState.discoveredAreas.push(newArea);
+                    showEvent(`You discovered the ${area.name}! ${area.description}`, 'good');
+                } else {
+                    showEvent("You found a new area but don't have the resources/energy to explore it yet.", 'neutral');
+                }
+            } else {
+                showEvent("You explored but didn't find anything new.", 'neutral');
+            }
+            
+            // Random exploration event
+            if (Math.random() < 0.4) {
+                triggerRandomExplorationEvent();
+            }
+            
+            progressTime();
+            updateDisplay();
+            checkGameOver();
+        }
+
+        // Gather resources
+        function gatherResources() {
+            if (gameState.energy < 15) {
+                showEvent("You're too tired to gather resources!", 'danger');
+                return;
+            }
+            
+            // Energy and hunger cost
+            gameState.energy = Math.max(0, gameState.energy - 10);
+            gameState.hunger = Math.max(0, gameState.hunger - 5);
+            
+            // Determine which area to gather from
+            let availableResources = ['🪵', '🥥']; // Beach resources by default
+            
+            if (gameState.discoveredAreas.includes('forest')) {
+                availableResources.push('🌴', '🍌', '🧵');
+            }
+            if (gameState.discoveredAreas.includes('hills')) {
+                availableResources.push('🪨', '🧵');
+            }
+            
+            // Gather 1-3 random resources
+            const gatherCount = 1 + Math.floor(Math.random() * 3);
+            let gatheredItems = {};
+            
+            for (let i = 0; i < gatherCount; i++) {
+                const resource = availableResources[Math.floor(Math.random() * availableResources.length)];
+                gameState.resources[resource].count++;
+                gatheredItems[resource] = (gatheredItems[resource] || 0) + 1;
+            }
+            
+            // Show what was gathered
+            let gatheredText = "You gathered: ";
+            gatheredText += Object.entries(gatheredItems).map(
+                ([emoji, count]) => `${emoji}×${count}`
+            ).join(", ");
+            
+            showEvent(gatheredText, 'good');
+            gameState.stats.resourcesGathered += gatherCount;
+            
+            // Random gathering event (20% chance)
+            if (Math.random() < 0.2) {
+                triggerRandomGatheringEvent();
+            }
+            
+            progressTime();
+            updateDisplay();
+            checkGameOver();
+        }
+
+        // Hunt or fish for food
+        function hunt() {
+            if (gameState.energy < 30) {
+                showEvent("You're too tired to hunt/fish right now.", 'danger');
+                return;
+            }
+            
+            // Check if player has tools
+            const hasFishingRod = gameState.resources['🎣'].count > 0;
+            const hasBow = gameState.resources['🏹'].count > 0;
+            
+            if (!hasFishingRod && !hasBow) {
+                showEvent("You need a fishing rod or bow to hunt/fish!", 'danger');
+                return;
+            }
+            
+            // Energy and hunger cost
+            gameState.energy = Math.max(0, gameState.energy - 25);
+            gameState.hunger = Math.max(0, gameState.hunger - 15);
+            
+            // Determine success based on tools and luck
+            let successChance = 0.5;
+            let foodType = '🐟'; // Default to fish
+            
+            if (hasBow && Math.random() < 0.6) {
+                successChance = 0.7;
+                foodType = '🍖';
+            }
+            
+            if (Math.random() < successChance) {
+                gameState.resources[foodType].count++;
+                showEvent(`You caught ${foodType === '🐟' ? 'a fish' : 'some meat'}!`, 'good');
+            } else {
+                showEvent("You didn't catch anything this time.", 'neutral');
+                
+                // Small chance of injury when hunting
+                if (foodType === '🍖' && Math.random() < 0.2) {
+                    const damage = Math.floor(Math.random() * 15) + 5;
+                    gameState.health -= damage;
+                    showEvent(`The animal fought back! You lost ${damage}% health.`, 'danger');
+                }
+            }
+            
+            progressTime();
+            updateDisplay();
+            checkGameOver();
+        }
+
+        // Eat food to restore stats
+        function eat() {
+            // Find available food items
+            const availableFood = Object.entries(gameState.resources).filter(
+                ([key, item]) => foodItems[key] && item.count > 0
+            );
+            
+            if (availableFood.length === 0) {
+                showEvent("You have no food to eat!", 'danger');
+                return;
+            }
+            
+            // For simplicity, just eat the first available food
+            const [foodKey, foodItem] = availableFood[0];
+            const food = foodItems[foodKey];
+            
+            // Consume the food
+            gameState.resources[foodKey].count--;
+            
+            // Apply food effects
+            gameState.health = Math.min(100, gameState.health + food.health);
+            gameState.hunger = Math.min(100, gameState.hunger + food.hunger);
+            gameState.energy = Math.min(100, gameState.energy + food.energy);
+            
+            showEvent(`You ate ${foodKey} and feel better!`, 'good');
+            
+            progressTime();
+            updateDisplay();
+        }
+
+        // Rest to regain energy
+        function rest() {
+            const currentTime = timeSegments[gameState.timeSegment];
+            let energyGain = 20;
+            let healthGain = 5;
+            let moraleGain = 5;
+            
+            if (!currentTime.canExplore) { // It's night
+                if (gameState.resources['🏕️'].count > 0) { // Has basic camp
+                    energyGain = 40;
+                    healthGain = 10;
+                    moraleGain = 10;
+                    showEvent('You sleep safely in your camp.', 'good');
+                } else if (gameState.resources['🔥'].count > 0) { // Has campfire
+                    energyGain = 30;
+                    healthGain = 5;
+                    moraleGain = 5;
+                    showEvent('You rest by the campfire.', 'neutral');
+                } else {
+                    energyGain = 15;
+                    // Higher health risk without camp
+                    if (Math.random() < 0.5) {
+                        const damage = Math.floor(Math.random() * 20) + 5;
+                        gameState.health -= damage;
+                        showEvent(`You tried to rest but were attacked in the night! Lost ${damage}% health.`, 'danger');
+                    } else {
+                        showEvent('You rest uneasily without proper shelter.', 'neutral');
+                    }
+                }
+            } else {
+                showEvent('You take a short break to regain some energy.', 'neutral');
+            }
+            
+            // Apply rest effects
+            gameState.energy = Math.min(100, gameState.energy + energyGain);
+            gameState.health = Math.min(100, gameState.health + healthGain);
+            gameState.morale = Math.min(100, gameState.morale + moraleGain);
+            
+            progressTime();
+            updateDisplay();
+            checkGameOver();
+        }
+
+        // Progress time (day segments)
+        function progressTime() {
+            gameState.timeSegment++;
+            
+            // Apply hunger and morale decay
+            if (gameState.timeSegment % 2 === 0) { // Every other time segment
+                gameState.hunger = Math.max(0, gameState.hunger - 5);
+                gameState.morale = Math.max(0, gameState.morale - 3);
+            }
+            
+            // Change weather occasionally
+            if (Math.random() < 0.3) {
+                const newWeather = weatherTypes[Math.floor(Math.random() * weatherTypes.length)];
+                if (newWeather.type !== gameState.currentWeather) {
+                    gameState.currentWeather = newWeather.type;
+                    showEvent(`Weather changed to ${newWeather.type}.`, 'neutral');
+                    
+                    // Apply weather effects
+                    gameState.energy = Math.max(0, gameState.energy + newWeather.effects.energy);
+                    gameState.health = Math.max(0, gameState.health + newWeather.effects.health);
+                }
+            }
+            
+            if (gameState.timeSegment >= timeSegments.length) {
+                // New day
+                gameState.timeSegment = 0;
+                gameState.day++;
+                gameState.stats.daysSurvived++;
+                
+                // Random day-start event
+                triggerNewDayEvent();
+            }
+            
+            updateDisplay();
+        }
+
+        // Random exploration events
+        function triggerRandomExplorationEvent() {
+            const events = [
+                { 
+                    message: "You found a hidden cache of supplies!", 
+                    effect: () => {
+                        gameState.resources['🪵'].count += 3;
+                        gameState.resources['🥥'].count += 2;
+                    }, 
+                    type: 'good' 
+                },
+                { 
+                    message: "You discovered a fresh water source!", 
+                    effect: () => {
+                        gameState.resources['💧'].count += 3;
+                        if (!gameState.unlockedRecipes.includes('rope')) {
+                            gameState.unlockedRecipes.push('rope');
+                        }
+                    }, 
+                    type: 'good' 
+                },
+                { 
+                    message: "You got lost for a while and wasted energy.", 
+                    effect: () => {
+                        gameState.energy = Math.max(0, gameState.energy - 15);
+                    }, 
+                    type: 'danger' 
+                },
+                { 
+                    message: "You stumbled upon a dangerous animal!", 
+                    effect: () => {
+                        const damage = Math.floor(Math.random() * 25) + 10;
+                        gameState.health -= damage;
+                    }, 
+                    type: 'danger' 
+                },
+                { 
+                    message: "You found some useful plants.", 
+                    effect: () => {
+                        gameState.resources['🧵'].count += 5;
+                    }, 
+                    type: 'good' 
+                }
+            ];
+            
+            triggerRandomEvent(events);
+        }
+
+        // Random gathering events
+        function triggerRandomGatheringEvent() {
+            const events = [
+                { 
+                    message: "A coconut falls from a tree nearby!", 
+                    effect: () => {
+                        gameState.resources['🥥'].count += 2;
+                    }, 
+                    type: 'good' 
+                },
+                { 
+                    message: "You cut yourself while gathering.", 
+                    effect: () => {
+                        const damage = Math.floor(Math.random() * 10) + 5;
+                        gameState.health -= damage;
+                    }, 
+                    type: 'danger' 
+                },
+                { 
+                    message: "You found a beached fishing net with useful materials.", 
+                    effect: () => {
+                        gameState.resources['🧶'].count += 2;
+                    }, 
+                    type: 'good' 
+                },
+                { 
+                    message: "A sudden rain shower makes gathering difficult.", 
+                    effect: () => {
+                        gameState.energy = Math.max(0, gameState.energy - 5);
+                    }, 
+                    type: 'neutral' 
+                }
+            ];
+            
+            triggerRandomEvent(events);
+        }
+
+        // New day events
+        function triggerNewDayEvent() {
+            const events = [
+                { 
+                    message: "A new day dawns. The weather looks favorable.", 
+                    effect: () => {
+                        gameState.currentWeather = 'clear';
+                        gameState.morale = Math.min(100, gameState.morale + 5);
+                    }, 
+                    type: 'good' 
+                },
+                { 
+                    message: "You wake up to stormy weather. Not a good start to the day.", 
+                    effect: () => {
+                        gameState.currentWeather = 'stormy';
+                        gameState.morale = Math.max(0, gameState.morale - 10);
+                    }, 
+                    type: 'danger' 
+                },
+                { 
+                    message: "During the night, animals raided your supplies!", 
+                    effect: () => {
+                        if (gameState.resources['🍌'].count > 0) {
+                            const lost = Math.min(2, gameState.resources['🍌'].count);
+                            gameState.resources['🍌'].count -= lost;
+                        }
+                        if (gameState.resources['🐟'].count > 0) {
+                            const lost = Math.min(1, gameState.resources['🐟'].count);
+                            gameState.resources['🐟'].count -= lost;
+                        }
+                    }, 
+                    type: 'danger' 
+                },
+                { 
+                    message: "You had strange dreams but woke up refreshed.", 
+                    effect: () => {
+                        gameState.energy = Math.min(100, gameState.energy + 10);
+                        gameState.health = Math.min(100, gameState.health + 5);
+                    }, 
+                    type: 'good' 
+                }
+            ];
+            
+            triggerRandomEvent(events);
+        }
+
+        // Nighttime events
+        function triggerNightEvent() {
+            const events = [
+                { 
+                    message: "You hear sharks 🦈 circling nearby...", 
+                    effect: () => {
+                        if (!gameState.resources['🏕️'].count && Math.random() < 0.6) {
+                            const damage = Math.floor(Math.random() * 15) + 5;
+                            gameState.health -= damage;
+                            showEvent(`A shark attacked you! Lost ${damage}% health.`, 'danger');
+                        }
+                    }, 
+                    type: 'danger' 
+                },
+                { 
+                    message: "Strange creatures 👹 are lurking in the shadows...", 
+                    effect: () => {
+                        if (!gameState.resources['🏕️'].count) {
+                            const damage = Math.floor(Math.random() * 25) + 10;
+                            gameState.health -= damage;
+                            showEvent(`The creatures attacked you! Lost ${damage}% health.`, 'danger');
+                        }
+                    }, 
+                    type: 'danger' 
+                },
+                { 
+                    message: "The stars are beautiful tonight.", 
+                    effect: () => {
+                        gameState.morale = Math.min(100, gameState.morale + 10);
+                    }, 
+                    type: 'good' 
+                },
+                { 
+                    message: "A storm hits the island!", 
+                    effect: () => {
+                        const damage = gameState.resources['🏕️'].count ? 5 : 20;
+                        gameState.health -= damage;
+                        showEvent(`The storm ${gameState.resources['🏕️'].count ? 'damaged your camp a little' : 'ravaged you'}! Lost ${damage}% health.`, 'danger');
+                    }, 
+                    type: 'danger' 
+                },
+                { 
+                    message: "A friendly dolphin brings you a gift!", 
+                    effect: () => {
+                        gameState.resources['🐟'].count += 2;
+                    }, 
+                    type: 'good' 
+                }
+            ];
+            
+            triggerRandomEvent(events);
+        }
+
+        // Helper to trigger random events
+        function triggerRandomEvent(eventList) {
+            const randomEvent = eventList[Math.floor(Math.random() * eventList.length)];
+            showEvent(randomEvent.message, randomEvent.type);
+            randomEvent.effect();
+            gameState.stats.eventsSurvived++;
+            updateDisplay();
+        }
+
+        // Show event message
+        function showEvent(message, type) {
+            eventMessageEl.textContent = message;
+            eventMessageEl.className = `event-message ${type}`;
+            eventMessageEl.style.display = 'block';
+            
+            // Hide message after 3 seconds
+            setTimeout(() => {
+                eventMessageEl.style.display = 'none';
+            }, 3000);
+        }
+
+        // Check if game is over
+        function checkGameOver() {
+            if (gameState.health <= 0 || gameState.hunger <= 0 || gameState.morale <= 0) {
+                endGame(false);
+            }
+        }
+
+        // End the game
+        function endGame(escaped) {
+            gameState.gameOver = true;
+            
+            let gameOverMessage = '';
+            if (escaped) {
+                gameOverMessage = `
+                    <div class="game-over">YOU ESCAPED THE ISLAND!</div>
+                    <p>After ${gameState.stats.daysSurvived} days, you built a boat and sailed to safety!</p>
+                `;
+            } else {
+                let reason = '';
+                if (gameState.health <= 0) reason = "Your health reached zero.";
+                else if (gameState.hunger <= 0) reason = "You starved to death.";
+                else if (gameState.morale <= 0) reason = "You lost the will to survive.";
+                
+                gameOverMessage = `
+                    <div class="game-over">GAME OVER</div>
+                    <p>You survived ${gameState.stats.daysSurvived} days on the island.</p>
+                    <p>${reason}</p>
+                `;
+            }
+            
+            gameOverMessage += `
+                <p><strong>Game Stats:</strong></p>
+                <ul style="text-align: left; display: inline-block;">
+                    <li>Days survived: ${gameState.stats.daysSurvived}</li>
+                    <li>Items crafted: ${gameState.stats.itemsCrafted}</li>
+                    <li>Resources gathered: ${gameState.stats.resourcesGathered}</li>
+                    <li>Events survived: ${gameState.stats.eventsSurvived}</li>
+                </ul>
+                <p><button onclick="location.reload()">Play Again</button></p>
+            `;
+            
+            gameAreaEl.innerHTML = gameOverMessage;
+            
+            // Disable all buttons
+            document.querySelectorAll('button').forEach(btn => {
+                btn.disabled = true;
+            });
+        }
+
+        // Switch between tabs
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            document.querySelector(`.tab[onclick="switchTab('${tabName}')"]`).classList.add('active');
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+        }
+
+        // Open crafting tab
+        function openCrafting() {
+            switchTab('crafting');
+        }
+
+        // Initialize game
+        updateDisplay();
+    </script>
+</body>
+</html>
