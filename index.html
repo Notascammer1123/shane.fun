@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<link rel="icon" href="comp.png" type="image/png">
-
+    <link rel="icon" href="comp.png" type="image/png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shane.fun</title>
@@ -10,6 +9,7 @@
         body {
             font-family: Comic Sans MS, sans-serif;
             text-align: center;
+            position: relative;
         }
         .logo {
             width: 300px;
@@ -31,9 +31,133 @@
             border-radius: 10px;
             cursor: pointer;
         }
+        /* Auth modal styles */
+        .auth-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .auth-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 300px;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        /* XP display */
+        .xp-container {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background-color: rgba(255,255,255,0.8);
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+            z-index: 100;
+            width: 200px;
+        }
+        .xp-bar {
+            height: 20px;
+            background-color: #ddd;
+            border-radius: 10px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        .xp-progress {
+            height: 100%;
+            background-color: #4CAF50;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .auth-buttons {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+        .auth-button {
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .close-button {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
+    <div class="auth-modal" id="authModal">
+        <div class="auth-content">
+            <button class="close-button" onclick="hideAuthModal()">×</button>
+            <div id="loginForm">
+                <h3>Login</h3>
+                <input type="text" id="loginUsername" placeholder="Username">
+                <input type="password" id="loginPassword" placeholder="Password">
+                <button onclick="login()">Login</button>
+                <p id="loginError" style="color:red;"></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="auth-modal" id="signupModal">
+        <div class="auth-content">
+            <button class="close-button" onclick="hideSignupModal()">×</button>
+            <div id="signupForm">
+                <h3>Sign Up</h3>
+                <input type="text" id="signupUsername" placeholder="Username">
+                <input type="password" id="signupPassword" placeholder="Password">
+                <input type="password" id="signupConfirmPassword" placeholder="Confirm Password">
+                <button onclick="signup()">Sign Up</button>
+                <p id="signupError" style="color:red;"></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="auth-buttons" id="authButtons">
+        <button class="auth-button" onclick="showLoginModal()">Login</button>
+        <button class="auth-button" onclick="showSignupModal()">Sign Up</button>
+    </div>
+
+    <div class="xp-container" id="xpContainer">
+        <div>Level <span id="levelValue">1</span></div>
+        <div><span id="xpValue">0</span>/100 XP</div>
+        <div class="xp-bar">
+            <div class="xp-progress" id="xpProgress"></div>
+        </div>
+    </div>
+
     <img src="Shane.Fun.png" alt="Shane.fun Logo" class="logo">
     <div class="container">
         <div class="button" style="background-image: url('MouseStamina.png');" onclick="location.href='MouseCursorStop.html'"></div>
@@ -62,5 +186,184 @@
         <div class="button" style="background-image: url('SurvivalG.png');" onclick="location.href='Survive.html'"></div>
         <div class="button" style="background-image: url('CRDS.png');" onclick="location.href='Credits.html'"></div>
     </div>
+
+    <script>
+        // User data storage - WILL PERSIST BETWEEN VISITS (using localStorage)
+        let users = JSON.parse(localStorage.getItem('shaneFunUsers')) || {};
+        let currentUser = null;
+        
+        // Check if user is already logged in when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            const loggedInUser = localStorage.getItem('shaneFunCurrentUser');
+            if (loggedInUser && users[loggedInUser]) {
+                currentUser = loggedInUser;
+                updateAuthUI();
+                startXPTimer();
+            }
+        });
+
+        // Auth modal functions
+        function showLoginModal() {
+            document.getElementById('authModal').style.display = 'flex';
+        }
+
+        function showSignupModal() {
+            document.getElementById('signupModal').style.display = 'flex';
+        }
+
+        function hideAuthModal() {
+            document.getElementById('authModal').style.display = 'none';
+            document.getElementById('loginError').textContent = '';
+        }
+
+        function hideSignupModal() {
+            document.getElementById('signupModal').style.display = 'none';
+            document.getElementById('signupError').textContent = '';
+        }
+
+        // Auth functions
+        function login() {
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!username || !password) {
+                document.getElementById('loginError').textContent = 'Please enter both username and password';
+                return;
+            }
+            
+            if (!users[username] || users[username].password !== password) {
+                document.getElementById('loginError').textContent = 'Invalid username or password';
+                return;
+            }
+            
+            currentUser = username;
+            localStorage.setItem('shaneFunCurrentUser', username);
+            updateAuthUI();
+            hideAuthModal();
+            startXPTimer();
+        }
+
+        function signup() {
+            const username = document.getElementById('signupUsername').value;
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('signupConfirmPassword').value;
+            
+            if (!username || !password || !confirmPassword) {
+                document.getElementById('signupError').textContent = 'Please fill all fields';
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                document.getElementById('signupError').textContent = 'Passwords do not match';
+                return;
+            }
+            
+            if (users[username]) {
+                document.getElementById('signupError').textContent = 'Username already exists';
+                return;
+            }
+            
+            users[username] = {
+                password: password,
+                xp: 0,
+                level: 1,
+                lastXPTimestamp: null
+            };
+            
+            localStorage.setItem('shaneFunUsers', JSON.stringify(users));
+            currentUser = username;
+            localStorage.setItem('shaneFunCurrentUser', username);
+            updateAuthUI();
+            hideSignupModal();
+            startXPTimer();
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('shaneFunCurrentUser');
+            updateAuthUI();
+            stopXPTimer();
+        }
+
+        function updateAuthUI() {
+            const authButtons = document.getElementById('authButtons');
+            const xpContainer = document.getElementById('xpContainer');
+            
+            if (currentUser) {
+                authButtons.innerHTML = '<button class="auth-button" onclick="logout()">Logout</button>';
+                xpContainer.style.display = 'block';
+                
+                // Update XP display
+                const user = users[currentUser];
+                const xpForCurrentLevel = user.xp % 100;
+                document.getElementById('xpValue').textContent = xpForCurrentLevel;
+                document.getElementById('levelValue').textContent = user.level;
+                document.getElementById('xpProgress').style.width = `${xpForCurrentLevel}%`;
+            } else {
+                authButtons.innerHTML = `
+                    <button class="auth-button" onclick="showLoginModal()">Login</button>
+                    <button class="auth-button" onclick="showSignupModal()">Sign Up</button>
+                `;
+                xpContainer.style.display = 'none';
+            }
+        }
+
+        // XP System
+        let xpInterval;
+        
+        function startXPTimer() {
+            // Clear any existing timer
+            stopXPTimer();
+            
+            // Start new timer (award XP every minute)
+            xpInterval = setInterval(awardXP, 30000);
+            
+            // Award XP immediately for the first minute
+            awardXP();
+        }
+        
+        function stopXPTimer() {
+            if (xpInterval) {
+                clearInterval(xpInterval);
+            }
+        }
+        
+        function awardXP() {
+            if (!currentUser) return;
+            
+            const now = Date.now();
+            const user = users[currentUser];
+            
+            // Check if we've already awarded XP in the last minute
+            if (user.lastXPTimestamp && (now - user.lastXPTimestamp) < 60000) {
+                return;
+            }
+            
+            // Award XP (1 XP per minute)
+            user.xp += 1;
+            user.lastXPTimestamp = now;
+            
+            // Check for level up (100 XP per level)
+            const newLevel = Math.floor(user.xp / 100) + 1;
+            if (newLevel > user.level) {
+                user.level = newLevel;
+                alert(`Level Up! You're now level ${user.level}!`);
+            }
+            
+            // Save and update UI
+            localStorage.setItem('shaneFunUsers', JSON.stringify(users));
+            updateAuthUI();
+        }
+
+        // Close modals when clicking outside
+        window.addEventListener('click', function(event) {
+            if (event.target === document.getElementById('authModal')) {
+                hideAuthModal();
+            }
+            if (event.target === document.getElementById('signupModal')) {
+                hideSignupModal();
+            }
+        });
+    </script>
 </body>
 </html>
