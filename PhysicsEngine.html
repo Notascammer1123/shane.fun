@@ -1,15 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<link rel="icon" href="https://cdn-icons-png.flaticon.com/512/2670/2670296.png" type="image/png">
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/2670/2670296.png" type="image/png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PhysicsEngine</title>
+    <title>Physics Engine</title>
     <style>
         body {
             margin: 0;
             overflow: hidden;
-            background-color: white;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
         }
         canvas {
             display: block;
@@ -18,72 +19,180 @@
             position: fixed;
             top: 0;
             right: 0;
-            width: 200px;
+            width: 250px;
             height: 100%;
-            background-color: #333;
+            background-color: rgba(51, 51, 51, 0.9);
             color: white;
             padding: 10px;
             display: none;
             overflow-y: auto;
             text-align: center;
+            backdrop-filter: blur(5px);
         }
         #toggleMenu {
             position: fixed;
             top: 20px;
             right: 20px;
-            padding: 10px;
-            background-color: white;
+            padding: 10px 15px;
+            background-color: rgba(255, 255, 255, 0.8);
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            font-size: 20px;
+            z-index: 100;
         }
         #closeMenu {
             position: fixed;
             top: 20px;
-            right: 230px;
-            padding: 10px;
-            background-color: white;
+            right: 280px;
+            padding: 10px 15px;
+            background-color: rgba(255, 255, 255, 0.8);
             border: none;
             border-radius: 5px;
             cursor: pointer;
             display: none;
+            font-size: 20px;
+            z-index: 100;
         }
-        #clearAll {
+        #controls {
             position: fixed;
-            top: 20px;
+            bottom: 20px;
             left: 20px;
-            padding: 10px;
-            background-color: red;
-            color: white;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+        .control-btn {
+            padding: 10px 15px;
+            background-color: rgba(255, 255, 255, 0.8);
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            font-size: 14px;
+        }
+        #clearAll {
+            background-color: rgba(255, 50, 50, 0.8);
+            color: white;
+            font-size: 20px;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #windInfo {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        #windSlider {
+            width: 150px;
         }
         .menu-item {
             margin-bottom: 20px;
             cursor: pointer;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.2s;
+        }
+        .menu-item:hover {
+            background-color: rgba(255, 255, 255, 0.2);
         }
         .menu-item img {
-            width: 150px;
-            height: 150px;
+            width: 100px;
+            height: 100px;
+            display: block;
+            margin: 0 auto 10px;
+            object-fit: contain;
+        }
+        .menu-item span {
+            display: block;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .emoji-item {
+            font-size: 60px;
             display: block;
             margin: 0 auto;
+        }
+        #trashZone {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background-color: rgba(255, 50, 50, 0.5);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            z-index: 100;
+            transition: background-color 0.2s;
+        }
+        #trashZone:hover {
+            background-color: rgba(255, 50, 50, 0.8);
+        }
+        #balloonPopEffect {
+            position: absolute;
+            font-size: 100px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s, transform 0.5s;
+            z-index: 1000;
         }
     </style>
 </head>
 <body>
-<button id="toggleMenu">☰</button>
-<button id="closeMenu">✖</button>
-<button id="clearAll">Clear All</button>
+<button id="toggleMenu">☰ Menu</button>
+<button id="closeMenu">✖ Close</button>
+<div id="windInfo">
+    <div>Wind: <span id="windStatus">Off</span></div>
+    <input type="range" id="windSlider" min="0" max="2" step="0.1" value="0.5">
+    <div>Intensity: <span id="windValue">0.5</span></div>
+</div>
+<div id="controls">
+    <button id="toggleWind" class="control-btn">Toggle Wind</button>
+    <button id="reverseWind" class="control-btn">Reverse Wind</button>
+</div>
+<div id="trashZone" title="Drag objects here to delete or click to clear all">🗑️</div>
+<div id="balloonPopEffect">💥</div>
 <div id="menu">
-    <div class="menu-item" data-img="https://cdn-icons-png.flaticon.com/512/2670/2670296.png">
+    <h2>Add Objects</h2>
+    <div class="menu-item" data-img="https://cdn-icons-png.flaticon.com/512/2670/2670296.png" data-name="Anvil">
         <img src="https://cdn-icons-png.flaticon.com/512/2670/2670296.png" alt="Anvil">
+        <span>Anvil (Heavy)</span>
     </div>
-    <div class="menu-item" data-img="🔴">
-        <span style="font-size: 80px;">🔴</span>
+    <div class="menu-item" data-img="🔴" data-name="Ball">
+        <span class="emoji-item">🔴</span>
+        <span>Ball (Bouncy)</span>
     </div>
-    <div class="menu-item" data-img="🪶">
-        <span style="font-size: 80px;">🪶</span>
+    <div class="menu-item" data-img="🪶" data-name="Feather">
+        <span class="emoji-item">🪶</span>
+        <span>Feather (Light)</span>
+    </div>
+    <div class="menu-item" data-img="📦" data-name="Box">
+        <span class="emoji-item">📦</span>
+        <span>Box (Medium)</span>
+    </div>
+    <div class="menu-item" data-img="🎈" data-name="Balloon">
+        <span class="emoji-item">🎈</span>
+        <span>Balloon (Floaty)</span>
+    </div>
+    <div class="menu-item" data-img="🪨" data-name="Rock">
+        <span class="emoji-item">🪨</span>
+        <span>Rock (Heavy)</span>
+    </div>
+    <div class="menu-item" data-img="📌" data-name="Pin">
+        <span class="emoji-item">📌</span>
+        <span>Pin (Pops Balloons)</span>
     </div>
 </div>
 <canvas id="gravityCanvas"></canvas>
@@ -93,87 +202,313 @@
     const menu = document.getElementById('menu');
     const toggleMenu = document.getElementById('toggleMenu');
     const closeMenu = document.getElementById('closeMenu');
-    const clearAllButton = document.getElementById('clearAll');
+    const toggleWindButton = document.getElementById('toggleWind');
+    const reverseWindButton = document.getElementById('reverseWind');
+    const windInfo = document.getElementById('windInfo');
+    const windStatus = document.getElementById('windStatus');
+    const windSlider = document.getElementById('windSlider');
+    const windValue = document.getElementById('windValue');
+    const trashZone = document.getElementById('trashZone');
+    const balloonPopEffect = document.getElementById('balloonPopEffect');
 
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
+    // Physics constants
     const GRAVITY = 0.3;
-    const FEATHER_GRAVITY = 0.05;
-    const COLLISION_DAMPING = 0.2;
-    const BOUNCE_DAMPING = 0.8;
+    const AIR_RESISTANCE = 0.01;
+    const COLLISION_DAMPING = 0.8;
+    const BOUNCE_DAMPING = 0.7;
+    
+    // Object properties
+    const OBJECT_TYPES = {
+        '🔴': { gravity: GRAVITY, bounce: 0.8, airResistance: 0.02, size: 50, mass: 1, windEffect: 1.0, heavy: false },
+        '🪶': { gravity: GRAVITY * 0.1, bounce: 0.3, airResistance: 0.1, size: 40, mass: 0.1, windEffect: 1.5, heavy: false },
+        '📦': { gravity: GRAVITY, bounce: 0.5, airResistance: 0.03, size: 70, mass: 1.5, windEffect: 0.8, heavy: false },
+        '🎈': { gravity: GRAVITY * -0.1, bounce: 0.6, airResistance: 0.15, size: 60, mass: 0.2, windEffect: 1.8, heavy: false, popable: true },
+        '🪨': { gravity: GRAVITY * 1.2, bounce: 0.4, airResistance: 0.01, size: 60, mass: 2, windEffect: 0.3, heavy: true },
+        '📌': { gravity: GRAVITY * 0.5, bounce: 0.2, airResistance: 0.05, size: 30, mass: 0.3, windEffect: 0.7, heavy: false, canPop: true },
+        'default': { gravity: GRAVITY * 2, bounce: 0.2, airResistance: 0.005, size: 100, mass: 3, windEffect: 0.1, heavy: true }
+    };
+
+    // System variables
     const objects = [];
     let heldObject = null;
+    let windActive = false;
+    let windDirection = 1; // 1 for right, -1 for left
+    let windSpeed = parseFloat(windSlider.value);
 
-    class GravityObject {
-        constructor(x, y, imgSrc, isBouncy = false, isFeather = false) {
+    class PhysicsObject {
+        constructor(x, y, imgSrc) {
             this.x = x;
             this.y = y;
             this.vx = 0;
             this.vy = 0;
-            this.size = isFeather ? 50 : (isBouncy ? 80 : 200); 
             this.imgSrc = imgSrc;
-            this.isBouncy = isBouncy;
-            this.isFeather = isFeather;
+            this.rotation = 0;
+            this.rotationSpeed = 0;
+            this.isPopped = false;
+            this.crushedObjects = []; // Objects this heavy object is crushing
+            
+            // Set properties based on object type
+            const props = OBJECT_TYPES[imgSrc] || OBJECT_TYPES['default'];
+            this.size = props.size;
+            this.gravity = props.gravity;
+            this.bounce = props.bounce;
+            this.airResistance = props.airResistance;
+            this.mass = props.mass;
+            this.windEffect = props.windEffect;
+            this.heavy = props.heavy || false;
+            this.popable = props.popable || false;
+            this.canPop = props.canPop || false;
+            
             this.image = new Image();
-            if (imgSrc !== '🔴' && imgSrc !== '🪶') this.image.src = imgSrc;
+            if (!['🔴', '🪶', '📦', '🎈', '🪨', '📌'].includes(imgSrc)) {
+                this.image.src = imgSrc;
+                this.size = 100;
+            }
         }
 
         update() {
-            if (heldObject !== this) {
-                this.vy += this.isFeather ? FEATHER_GRAVITY : GRAVITY;
+            if (heldObject !== this && !this.isPopped) {
+                // Apply gravity
+                this.vy += this.gravity;
+                
+                // Apply wind if active (reduced effect for heavy objects)
+                if (windActive) {
+                    this.vx += windSpeed * windDirection * this.windEffect * (1 / this.mass);
+                }
+                
+                // Apply air resistance
+                this.vx *= (1 - this.airResistance);
+                this.vy *= (1 - this.airResistance);
+                
+                // Update position
                 this.x += this.vx;
                 this.y += this.vy;
+                
+                // Update rotation based on horizontal velocity
+                this.rotation += this.vx * 0.05;
+                this.rotationSpeed = this.vx * 0.05;
 
-                if (this.y + this.size > canvas.height) {
-                    this.y = canvas.height - this.size;
-                    this.vy = this.isFeather ? 0 : (this.isBouncy ? -this.vy * BOUNCE_DAMPING : 0);
-                }
-
+                // Boundary collision
+                this.checkBoundaries();
+                
+                // Object collision
                 this.checkCollision();
+                
+                // Update crushed objects (if this is a heavy object)
+                this.updateCrushedObjects();
+            }
+        }
+
+        checkBoundaries() {
+            // Right boundary
+            if (this.x + this.size > canvas.width) {
+                this.x = canvas.width - this.size;
+                this.vx = -this.vx * this.bounce;
+            }
+            // Left boundary
+            if (this.x < 0) {
+                this.x = 0;
+                this.vx = -this.vx * this.bounce;
+            }
+            // Bottom boundary
+            if (this.y + this.size > canvas.height) {
+                this.y = canvas.height - this.size;
+                this.vy = -this.vy * this.bounce;
+                // Friction when on ground
+                this.vx *= 0.9;
+            }
+            // Top boundary
+            if (this.y < 0) {
+                this.y = 0;
+                this.vy = -this.vy * this.bounce;
             }
         }
 
         checkCollision() {
             objects.forEach(obj => {
-                if (obj === this || obj.isFeather) return;
-
-                if (this.x < obj.x + obj.size && this.x + this.size > obj.x && this.y + this.size > obj.y && this.y < obj.y + obj.size) {
-                    if (this.vy > 0) {
-                        this.vy = this.isBouncy ? -this.vy * BOUNCE_DAMPING : 0;
-                        this.y = obj.y - this.size;
+                if (obj === this || obj.isPopped) return;
+                
+                // Simple collision detection
+                if (this.x < obj.x + obj.size && 
+                    this.x + this.size > obj.x && 
+                    this.y < obj.y + obj.size && 
+                    this.y + this.size > obj.y) {
+                    
+                    // Check if this object can pop the other (pin vs balloon)
+                    if (this.canPop && obj.popable) {
+                        this.popBalloon(obj);
+                        return;
+                    }
+                    if (obj.canPop && this.popable) {
+                        obj.popBalloon(this);
+                        return;
+                    }
+                    
+                    // Heavy object landing on light object
+                    if (this.heavy && !obj.heavy && this.vy > 0 && this.y < obj.y) {
+                        if (!this.crushedObjects.includes(obj)) {
+                            this.crushedObjects.push(obj);
+                        }
+                        return;
+                    }
+                    
+                    // Calculate collision response
+                    const dx = (this.x + this.size/2) - (obj.x + obj.size/2);
+                    const dy = (this.y + this.size/2) - (obj.y + obj.size/2);
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    // Minimum translation distance to push balls apart
+                    const minDist = (this.size/2 + obj.size/2);
+                    if (distance < minDist) {
+                        const angle = Math.atan2(dy, dx);
+                        const tx = this.x + Math.cos(angle) * (minDist - distance) * 0.5;
+                        const ty = this.y + Math.sin(angle) * (minDist - distance) * 0.5;
+                        
+                        // Apply positional correction
+                        this.x = tx;
+                        this.y = ty;
+                        
+                        // Calculate new velocities (simplified elastic collision)
+                        const momentum = this.bounce * obj.bounce * COLLISION_DAMPING;
+                        this.vx = obj.vx * momentum;
+                        this.vy = obj.vy * momentum;
                     }
                 }
             });
         }
 
-        draw() {
-            if (this.imgSrc === '🔴' || this.imgSrc === '🪶') {
-                ctx.font = `${this.size}px serif`;
-                ctx.fillText(this.imgSrc, this.x, this.y + this.size);
-            } else {
-                ctx.drawImage(this.image, this.x, this.y, this.size, this.size);
+        updateCrushedObjects() {
+            if (!this.heavy) return;
+            
+            // Update all objects this heavy object is crushing
+            for (let i = this.crushedObjects.length - 1; i >= 0; i--) {
+                const obj = this.crushedObjects[i];
+                
+                // Check if we're still on top of the object
+                if (this.x + this.size > obj.x && 
+                    this.x < obj.x + obj.size && 
+                    this.y + this.size > obj.y && 
+                    this.y < obj.y + obj.size) {
+                    
+                    // Make the light object follow the heavy one's movement
+                    obj.x = this.x + (obj.x - this.x) * 0.9;
+                    obj.vx = this.vx * 0.8;
+                    obj.vy = this.vy * 0.8;
+                } else {
+                    // Remove from crushed objects if no longer colliding
+                    this.crushedObjects.splice(i, 1);
+                }
             }
         }
 
+        popBalloon(balloon) {
+            balloon.isPopped = true;
+            
+            // Show pop effect
+            balloonPopEffect.style.left = (balloon.x + balloon.size/2 - 50) + 'px';
+            balloonPopEffect.style.top = (balloon.y + balloon.size/2 - 50) + 'px';
+            balloonPopEffect.style.opacity = '1';
+            balloonPopEffect.style.transform = 'scale(1.5)';
+            
+            setTimeout(() => {
+                balloonPopEffect.style.opacity = '0';
+                balloonPopEffect.style.transform = 'scale(0.5)';
+            }, 500);
+            
+            // Remove the balloon after a delay
+            setTimeout(() => {
+                const index = objects.indexOf(balloon);
+                if (index !== -1) {
+                    objects.splice(index, 1);
+                }
+            }, 1000);
+        }
+
+        draw() {
+            if (this.isPopped) return;
+            
+            ctx.save();
+            ctx.translate(this.x + this.size/2, this.y + this.size/2);
+            ctx.rotate(this.rotation);
+            
+            if (['🔴', '🪶', '📦', '🎈', '🪨', '📌'].includes(this.imgSrc)) {
+                ctx.font = `${this.size}px serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(this.imgSrc, 0, 0);
+            } else {
+                ctx.drawImage(this.image, -this.size/2, -this.size/2, this.size, this.size);
+            }
+            
+            ctx.restore();
+        }
+
         isMouseOver(mx, my) {
-            return mx > this.x && mx < this.x + this.size && my > this.y && my < this.y + this.size;
+            return !this.isPopped && mx > this.x && mx < this.x + this.size && my > this.y && my < this.y + this.size;
         }
     }
 
     function animate() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Draw wind indicator if active
+        if (windActive) {
+            ctx.fillStyle = 'rgba(100, 200, 255, 0.3)';
+            for (let y = 0; y < canvas.height; y += 40) {
+                for (let x = 0; x < canvas.width; x += 100) {
+                    const offset = (Date.now() * 0.01 + y * 0.1) % 100;
+                    ctx.beginPath();
+                    if (windDirection > 0) {
+                        ctx.moveTo(x + offset, y + 10);
+                        ctx.lineTo(x + offset - 15, y);
+                        ctx.lineTo(x + offset - 15, y + 20);
+                    } else {
+                        ctx.moveTo(x + 100 - offset, y + 10);
+                        ctx.lineTo(x + 115 - offset, y);
+                        ctx.lineTo(x + 115 - offset, y + 20);
+                    }
+                    ctx.closePath();
+                    ctx.fill();
+                }
+            }
+        }
+        
+        // Draw trash zone
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(trashZone.offsetLeft + trashZone.offsetWidth/2, 
+                trashZone.offsetTop + trashZone.offsetHeight/2, 
+                trashZone.offsetWidth/2, 0, Math.PI * 2);
+        ctx.fillStyle = trashZone.style.backgroundColor;
+        ctx.fill();
+        ctx.font = '30px serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = 'white';
+        ctx.fillText('🗑️', trashZone.offsetLeft + trashZone.offsetWidth/2, 
+                    trashZone.offsetTop + trashZone.offsetHeight/2);
+        ctx.restore();
+        
+        // Update and draw objects
         objects.forEach(obj => {
             obj.update();
             obj.draw();
         });
+        
         requestAnimationFrame(animate);
     }
 
+    // Event listeners
     window.addEventListener('mousedown', (e) => {
         objects.forEach(obj => {
             if (obj.isMouseOver(e.clientX, e.clientY)) {
                 heldObject = obj;
+                // Give a slight velocity when picked up for more natural feeling
+                obj.vx = (Math.random() - 0.5) * 2;
+                obj.vy = -1;
             }
         });
     });
@@ -184,12 +519,53 @@
             heldObject.y = e.clientY - heldObject.size / 2;
             heldObject.vx = 0;
             heldObject.vy = 0;
+            heldObject.rotationSpeed = 0;
         }
     });
 
-    window.addEventListener('mouseup', () => heldObject = null);
+    window.addEventListener('mouseup', (e) => {
+        if (heldObject) {
+            // Check if object is dropped in trash zone
+            const trashRect = trashZone.getBoundingClientRect();
+            const isInTrash = e.clientX >= trashRect.left && 
+                             e.clientX <= trashRect.right && 
+                             e.clientY >= trashRect.top && 
+                             e.clientY <= trashRect.bottom;
+            
+            if (isInTrash) {
+                const index = objects.indexOf(heldObject);
+                if (index !== -1) {
+                    objects.splice(index, 1);
+                }
+            } else {
+                // Give a slight velocity when released
+                heldObject.vx = (Math.random() - 0.5) * 2;
+                heldObject.vy = -1;
+            }
+            heldObject = null;
+        }
+    });
 
-    clearAllButton.addEventListener('click', () => objects.length = 0);
+    trashZone.addEventListener('click', () => {
+        objects.length = 0;
+    });
+
+    toggleWindButton.addEventListener('click', () => {
+        windActive = !windActive;
+        windStatus.textContent = windActive ? `ON (${windDirection > 0 ? '→' : '←'})` : 'OFF';
+    });
+
+    reverseWindButton.addEventListener('click', () => {
+        windDirection *= -1;
+        if (windActive) {
+            windStatus.textContent = `ON (${windDirection > 0 ? '→' : '←'})`;
+        }
+    });
+
+    windSlider.addEventListener('input', () => {
+        windSpeed = parseFloat(windSlider.value);
+        windValue.textContent = windSpeed.toFixed(1);
+    });
 
     toggleMenu.addEventListener('click', () => {
         menu.style.display = 'block';
@@ -204,13 +580,24 @@
     document.querySelectorAll('.menu-item').forEach(item => {
         item.addEventListener('click', () => {
             const imgSrc = item.getAttribute('data-img');
-            const isBouncy = imgSrc === '🔴';
-            const isFeather = imgSrc === '🪶';
-            const newObject = new GravityObject(canvas.width / 2 - 100, 100, imgSrc, isBouncy, isFeather);
+            const name = item.getAttribute('data-name');
+            const newObject = new PhysicsObject(
+                canvas.width / 2 - 50, 
+                100, 
+                imgSrc
+            );
             objects.push(newObject);
+            console.log(`Added ${name}`);
         });
     });
 
+    // Handle window resize
+    window.addEventListener('resize', () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    });
+
+    // Start animation
     animate();
 </script>
 </body>
