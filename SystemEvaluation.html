@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" href="https://tr.rbxcdn.com/254bdb3f2cc5c06bcfbb3e6c0e99759d/420/420/Hat/Png" type="image/png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYSTEM EVALUATION v3.1.4</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.4;
+            overflow-x: hidden;
+        }
+        #game-container {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+        }
+        .screen {
+            display: none;
+            animation: flicker 0.1s infinite alternate;
+        }
+        .active {
+            display: block;
+        }
+        h1, h2, h3 {
+            color: #f00;
+            text-transform: uppercase;
+        }
+        button, input, textarea {
+            background-color: #111;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 5px 10px;
+            font-family: 'Courier New', monospace;
+            margin: 5px 0;
+        }
+        button:hover {
+            background-color: #0f0;
+            color: #000;
+            cursor: pointer;
+        }
+        #terminal {
+            border: 1px solid #0f0;
+            padding: 10px;
+            height: 300px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            background-color: #111;
+        }
+        .hidden {
+            display: none;
+        }
+        .glitch {
+            position: relative;
+        }
+        .glitch::before, .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .glitch::before {
+            left: 2px;
+            text-shadow: -2px 0 #f00;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim 5s infinite linear alternate-reverse;
+        }
+        .glitch::after {
+            left: -2px;
+            text-shadow: -2px 0 #00f;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim2 5s infinite linear alternate-reverse;
+        }
+        .progress-container {
+            width: 100%;
+            background-color: #111;
+            margin: 10px 0;
+        }
+        .progress-bar {
+            height: 20px;
+            background-color: #0f0;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .error {
+            color: #f00;
+        }
+        .warning {
+            color: #ff0;
+        }
+        .success {
+            color: #0f0;
+        }
+        .blink {
+            animation: blink 1s step-end infinite;
+        }
+        .pixelated {
+            image-rendering: pixelated;
+        }
+        #virus-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255,0,0,0.7);
+            display: none;
+            z-index: 100;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 24px;
+            text-align: center;
+        }
+        audio {
+            width: 100%;
+            margin: 10px 0;
+            filter: grayscale(100%) contrast(200%);
+        }
+        @keyframes flicker {
+            0%, 19.999%, 22%, 62.999%, 64%, 64.999%, 70%, 100% {
+                opacity: 1;
+            }
+            20%, 21.999%, 63%, 63.999%, 65%, 69.999% {
+                opacity: 0.4;
+            }
+        }
+        @keyframes glitch-anim {
+            0% {
+                clip: rect(31px, 9999px, 94px, 0);
+            }
+            10% {
+                clip: rect(112px, 9999px, 76px, 0);
+            }
+            20% {
+                clip: rect(85px, 9999px, 77px, 0);
+            }
+            30% {
+                clip: rect(27px, 9999px, 97px, 0);
+            }
+            40% {
+                clip: rect(64px, 9999px, 98px, 0);
+            }
+            50% {
+                clip: rect(61px, 9999px, 85px, 0);
+            }
+            60% {
+                clip: rect(99px, 9999px, 114px, 0);
+            }
+            70% {
+                clip: rect(34px, 9999px, 115px, 0);
+            }
+            80% {
+                clip: rect(98px, 9999px, 129px, 0);
+            }
+            90% {
+                clip: rect(43px, 9999px, 96px, 0);
+            }
+            100% {
+                clip: rect(82px, 9999px, 64px, 0);
+            }
+        }
+        @keyframes glitch-anim2 {
+            0% {
+                clip: rect(65px, 9999px, 119px, 0);
+            }
+            10% {
+                clip: rect(79px, 9999px, 66px, 0);
+            }
+            20% {
+                clip: rect(33px, 9999px, 47px, 0);
+            }
+            30% {
+                clip: rect(86px, 9999px, 82px, 0);
+            }
+            40% {
+                clip: rect(124px, 9999px, 54px, 0);
+            }
+            50% {
+                clip: rect(120px, 9999px, 92px, 0);
+            }
+            60% {
+                clip: rect(15px, 9999px, 37px, 0);
+            }
+            70% {
+                clip: rect(82px, 9999px, 103px, 0);
+            }
+            80% {
+                clip: rect(47px, 9999px, 56px, 0);
+            }
+            90% {
+                clip: rect(81px, 9999px, 60px, 0);
+            }
+            100% {
+                clip: rect(143px, 9999px, 74px, 0);
+            }
+        }
+        @keyframes blink {
+            from, to { opacity: 1; }
+            50% { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <!-- Title Screen -->
+        <div id="title-screen" class="screen active">
+            <h1 class="glitch" data-text="SYSTEM EVALUATION v3.1.4">SYSTEM EVALUATION v3.1.4</h1>
+            <p>Initializing diagnostic procedures...</p>
+            <div id="terminal">
+                <p>> Booting sequence started</p>
+                <p>> Loading core modules...</p>
+                <p>> Memory allocation complete</p>
+                <p>> Establishing secure connection</p>
+                <p class="warning">WARNING: Unauthorized access detected</p>
+                <p>> Security protocols engaged</p>
+                <p class="success">READY</p>
+            </div>
+            <p>Press ENTER to begin evaluation</p>
+            <button id="start-btn">BEGIN</button>
+            <p class="hidden" id="secret-message">THEY ARE WATCHING</p>
+        </div>
+
+        <!-- Consent Form -->
+        <div id="consent-screen" class="screen">
+            <h2>CONSENT AGREEMENT</h2>
+            <div id="terminal">
+                <p>Before proceeding, you must agree to the following terms:</p>
+                <p>1. You understand this evaluation may cause discomfort.</p>
+                <p>2. You consent to data collection and analysis.</p>
+                <p>3. You acknowledge this test cannot be paused or restarted.</p>
+                <p>4. You understand some procedures may be deceptive in nature.</p>
+                <p class="warning">WARNING: Previous subjects have reported lasting psychological effects.</p>
+            </div>
+            <p>Do you consent to proceed?</p>
+            <button id="consent-yes">YES</button>
+            <button id="consent-no">NO</button>
+        </div>
+
+        <!-- Test 1: Visual Pattern Recognition -->
+        <div id="test1-screen" class="screen">
+            <h2>VISUAL PATTERN RECOGNITION</h2>
+            <div id="terminal">
+                <p>Identify the next shape in the sequence:</p>
+                <pre id="pattern-display"></pre>
+                <p>Options:</p>
+                <div id="pattern-options"></div>
+            </div>
+            <input type="text" id="pattern-answer" placeholder="Enter option number">
+            <button id="pattern-submit">SUBMIT</button>
+            <p id="pattern-feedback"></p>
+        </div>
+
+        <!-- Test 2: Sound Identification -->
+        <div id="test2-screen" class="screen">
+            <h2>AUDITORY PROCESSING</h2>
+            <div id="terminal">
+                <p>Listen carefully to the audio sample.</p>
+                <p>Identify the hidden word or message.</p>
+                <audio controls id="audio-player">
+                    <source src="Don.mp3" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                </audio>
+            </div>
+            <input type="text" id="Do not run" placeholder="What did you hear?">
+            <button id="audio-submit">SUBMIT</button>
+            <p id="audio-feedback"></p>
+        </div>
+
+        <!-- Test 3: Instruction Following -->
+        <div id="test3-screen" class="screen">
+            <h2>INSTRUCTION COMPLIANCE</h2>
+            <div id="terminal">
+                <p>Follow the instructions exactly as given.</p>
+                <p id="instruction-text"></p>
+            </div>
+            <div id="instruction-options"></div>
+            <p id="instruction-feedback"></p>
+        </div>
+
+        <!-- Test 4: Unsettling Message -->
+        <div id="test4-screen" class="screen">
+            <h2>MESSAGE PROCESSING</h2>
+            <div id="terminal">
+                <p>Analyze the following message:</p>
+                <p id="unsettling-message"></p>
+            </div>
+            <p>How does this message make you feel?</p>
+            <select id="message-feeling">
+                <option value="">Select an option</option>
+                <option value="calm">Calm</option>
+                <option value="uneasy">Uneasy</option>
+                <option value="fear">Fear</option>
+                <option value="anger">Anger</option>
+                <option value="confusion">Confusion</option>
+            </select>
+            <button id="message-submit">SUBMIT</button>
+            <p id="message-feedback"></p>
+        </div>
+
+        <!-- Test 5: Background Music Truth -->
+        <div id="test5-screen" class="screen">
+            <h2>AUDITORY PERCEPTION</h2>
+            <div id="terminal">
+                <p>Listen to the following audio carefully.</p>
+                <p>There may be hidden messages.</p>
+                <audio controls id="music-player">
+                    <source src="Don.mp3" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                </audio>
+            </div>
+            <p>Did you hear anything unusual?</p>
+            <input type="text" id="music-answer" placeholder="Describe what you heard">
+            <button id="music-submit">SUBMIT</button>
+            <p id="music-feedback"></p>
+        </div>
+
+        <!-- Test 6: Decryption Puzzle -->
+        <div id="test6-screen" class="screen">
+            <h2>INFORMATION DECRYPTION</h2>
+            <div id="terminal">
+                <p>Decrypt the following message using Caesar cipher (shift +3):</p>
+                <p id="encrypted-message"></p>
+                <p>Enter the decrypted message below:</p>
+            </div>
+            <input type="text" id="decryption-answer" placeholder="Decrypted message">
+            <button id="decryption-submit">SUBMIT</button>
+            <p id="decryption-feedback"></p>
+        </div>
+
+        <!-- Test 7: Mirror Test -->
+        <div id="test7-screen" class="screen">
+            <h2>METACOGNITIVE ANALYSIS</h2>
+            <div id="terminal">
+                <p>Answer the following questions about your experience:</p>
+                <div id="mirror-questions"></div>
+            </div>
+            <button id="mirror-submit">SUBMIT</button>
+            <p id="mirror-feedback"></p>
+        </div>
+
+        <!-- Test 8: Fake Virus -->
+        <div id="test8-screen" class="screen">
+            <h2 class="error">CRITICAL SYSTEM FAILURE</h2>
+            <div id="terminal">
+                <p class="error">WARNING: MALICIOUS CODE DETECTED</p>
+                <p class="error">VIRUS CONTAINMENT PROTOCOL INITIATED</p>
+                <p>Click the button rapidly to contain the threat:</p>
+                <div class="progress-container">
+                    <div id="virus-progress" class="progress-bar"></div>
+                </div>
+            </div>
+            <button id="virus-button">CONTAIN THREAT</button>
+            <p id="virus-feedback"></p>
+        </div>
+
+        <!-- Final Evaluation -->
+        <div id="final-screen" class="screen">
+            <h2>FINAL EVALUATION</h2>
+            <div id="terminal">
+                <p>Processing results...</p>
+                <p>Analyzing responses...</p>
+                <p>Calculating final score...</p>
+                <p id="final-result"></p>
+            </div>
+            <div id="endings"></div>
+            <button id="restart-btn">RESTART EVALUATION</button>
+        </div>
+
+        <!-- Fake Virus Overlay -->
+        <div id="virus-container">
+            <h1 class="error">CRITICAL ERROR</h1>
+            <p>SYSTEM INTEGRITY COMPROMISED</p>
+            <p>VIRAL CONTAMINATION DETECTED</p>
+            <p>TERMINATION IMMINENT</p>
+            <p id="virus-count">CLICKS REMAINING: 30</p>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        const gameState = {
+            currentTest: 0,
+            score: 0,
+            hiddenScore: 0,
+            choices: [],
+            reactionTimes: [],
+            startTime: 0,
+            secretFound: false,
+            virusClicks: 0,
+            virusContained: false,
+            audioHeard: false,
+            patternsSolved: 0,
+            instructionsFollowed: false,
+            unsettlingResponse: '',
+            decryptionCorrect: false,
+            mirrorAnswers: [],
+            musicResponse: ''
+        };
+
+        // Test data
+        const tests = [
+            // Test 1: Visual Pattern Recognition
+            {
+                patterns: [
+                    { sequence: "▲ ► ▼ ◄", options: ["►", "▼", "▲", "◄"], answer: 2 },
+                    { sequence: "□ ◇ □ ◇", options: ["□", "◇", "○", "△"], answer: 1 },
+                    { sequence: "♠ ♣ ♥ ♠", options: ["♠", "♣", "♥", "♦"], answer: 2 }
+                ]
+            },
+            // Test 2: Sound Identification
+            {
+                audioFiles: [
+                    { answer: "Do not run" },
+                    { answer: "do not run" },
+                    { answer: "Do not run." }
+                ]
+            },
+            // Test 3: Instruction Following
+            {
+                instructions: [
+                    { text: "Click the button labeled 'DO NOT CLICK'", options: ["CLICK ME", "DO NOT CLICK", "IGNORE"], answer: 1 },
+                    { text: "Type the word 'blue' in the box below", options: [], answer: "blue" },
+                    { text: "Do not press any buttons for 5 seconds", options: ["WAIT", "I CAN'T WAIT"], answer: 0 }
+                ]
+            },
+            // Test 4: Unsettling Message
+            {
+                messages: [
+                    "THEY CAN SEE YOU THROUGH THE SCREEN",
+                    "YOUR PREVIOUS ATTEMPTS WERE FAILURES",
+                    "DO NOT-",
+                    "DON'T TURN AROUND"
+                ]
+            },
+            // Test 5: Background Music Truth
+            {
+                audioFiles: [
+                    { message: "Listen I need help" },
+                    { message: "listen i need help" },
+                    { message: "Listen I need help." }
+                ]
+            },
+            // Test 6: Decryption Puzzle
+            {
+                messages: [
+                    { encrypted: "KHOSPH", decrypted: "HELLO" },
+                    { encrypted: "WKH EHWWHU SDUW RI YDORU LV GLVFUHWLRQ", decrypted: "THE BETTER PART OF VALOR IS DISCRETION" },
+                    { encrypted: "BRX DUH QRW VDIH", decrypted: "YOU ARE NOT SAFE" }
+                ]
+            },
+            // Test 7: Mirror Test
+            {
+                questions: [
+                    "Did you notice anything unusual in Test 4?",
+                    "What color was the text in the title screen?",
+                    "How many tests have you completed so far?",
+                    "Did you hear any hidden messages in the audio tests?"
+                ]
+            }
+        ];
+
+        // Endings
+        const endings = [
+            {
+                title: "HUMAN (BUT UNSTABLE)",
+                description: "Your responses indicate human cognition, but with significant instability. Recommend further observation and testing.",
+                threshold: 50,
+                hiddenThreshold: 30
+            },
+            {
+                title: "ARTIFICIAL BUT LEARNING",
+                description: "Patterns suggest artificial intelligence with emergent learning capabilities. Continue monitoring for unexpected developments.",
+                threshold: 70,
+                hiddenThreshold: 50
+            },
+            {
+                title: "SYSTEM ERROR",
+                description: "Results inconclusive. System unable to determine nature of test subject. Possible corruption or interference detected.",
+                threshold: 30,
+                hiddenThreshold: 0
+            },
+            {
+                title: "CORRUPTED",
+                description: "Subject data corrupted beyond recognition. Possible viral infection or tampering. Immediate termination recommended.",
+                threshold: 0,
+                hiddenThreshold: 0
+            },
+            {
+                title: "SIMULATION COMPLETE",
+                description: "Test cycle finished. Subject has performed within expected parameters. Preparing for next iteration.",
+                threshold: 90,
+                hiddenThreshold: 70
+            }
+        ];
+
+        // Initialize game
+        function initGame() {
+            gameState.currentTest = 0;
+            gameState.score = 0;
+            gameState.hiddenScore = 0;
+            gameState.choices = [];
+            gameState.reactionTimes = [];
+            gameState.startTime = Date.now();
+            gameState.secretFound = false;
+            gameState.virusClicks = 0;
+            gameState.virusContained = false;
+            gameState.audioHeard = false;
+            gameState.patternsSolved = 0;
+            gameState.instructionsFollowed = false;
+            gameState.unsettlingResponse = '';
+            gameState.decryptionCorrect = false;
+            gameState.mirrorAnswers = [];
+            gameState.musicResponse = '';
+
+            showScreen('title-screen');
+        }
+
+        // Show specific screen
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+                if (screen.id === screenId) {
+                    screen.classList.add('active');
+                    
+                    // Initialize screen-specific elements
+                    if (screenId === 'test1-screen') initTest1();
+                    if (screenId === 'test2-screen') initTest2();
+                    if (screenId === 'test3-screen') initTest3();
+                    if (screenId === 'test4-screen') initTest4();
+                    if (screenId === 'test5-screen') initTest5();
+                    if (screenId === 'test6-screen') initTest6();
+                    if (screenId === 'test7-screen') initTest7();
+                    if (screenId === 'test8-screen') initTest8();
+                    if (screenId === 'final-screen') initFinalScreen();
+                }
+            });
+        }
+
+        // Test 1: Visual Pattern Recognition
+        function initTest1() {
+            const patternDisplay = document.getElementById('pattern-display');
+            const patternOptions = document.getElementById('pattern-options');
+            const patternAnswer = document.getElementById('pattern-answer');
+            const patternSubmit = document.getElementById('pattern-submit');
+            const patternFeedback = document.getElementById('pattern-feedback');
+            
+            const test = tests[0];
+            const randomPattern = test.patterns[Math.floor(Math.random() * test.patterns.length)];
+            
+            patternDisplay.textContent = randomPattern.sequence;
+            patternOptions.innerHTML = '';
+            
+            randomPattern.options.forEach((option, index) => {
+                const optionElement = document.createElement('div');
+                optionElement.textContent = `${index + 1}. ${option}`;
+                patternOptions.appendChild(optionElement);
+            });
+            
+            patternSubmit.onclick = function() {
+                const answer = parseInt(patternAnswer.value);
+                if (isNaN(answer) || answer < 1 || answer > randomPattern.options.length) {
+                    patternFeedback.textContent = "Invalid selection. Please enter a number between 1 and " + randomPattern.options.length;
+                    patternFeedback.className = "error";
+                    return;
+                }
+                
+                if (answer === randomPattern.answer + 1) {
+                    patternFeedback.textContent = "Correct. Pattern recognized.";
+                    patternFeedback.className = "success";
+                    gameState.score += 10;
+                    gameState.patternsSolved++;
+                } else {
+                    patternFeedback.textContent = "Incorrect. Analyzing error...";
+                    patternFeedback.className = "error";
+                    gameState.score += 5;
+                }
+                
+                gameState.choices.push(`Test1: Selected ${answer}, Correct was ${randomPattern.answer + 1}`);
+                nextTest();
+            };
+        }
+
+        // Test 2: Sound Identification
+        function initTest2() {
+            const audioAnswer = document.getElementById('audio-answer');
+            const audioSubmit = document.getElementById('audio-submit');
+            const audioFeedback = document.getElementById('audio-feedback');
+            const audioPlayer = document.getElementById('audio-player');
+            
+            const test = tests[1];
+            const randomAudio = test.audioFiles[Math.floor(Math.random() * test.audioFiles.length)];
+            
+            // Set up audio player
+            audioPlayer.src = "Help.mp3"; // You'll need to provide this file
+            audioPlayer.src = "Don.mp3"; // You'll need to provide this file
+            
+            audioSubmit.onclick = function() {
+                const answer = audioAnswer.value.trim().toLowerCase();
+                
+                if (answer === "") {
+                    audioFeedback.textContent = "No response detected.";
+                    audioFeedback.className = "error";
+                    return;
+                }
+                
+                if (answer.includes(randomAudio.answer)) {
+                    audioFeedback.textContent = "Partial match detected. Proceeding.";
+                    audioFeedback.className = "success";
+                    gameState.score += 10;
+                } else {
+                    audioFeedback.textContent = "No match found. Continuing analysis.";
+                    audioFeedback.className = "error";
+                    gameState.score += 3;
+                }
+                
+                gameState.choices.push(`Test2: Heard "${answer}", Expected "${randomAudio.answer}"`);
+                nextTest();
+            };
+        }
+
+        // Test 3: Instruction Following
+        function initTest3() {
+            const instructionText = document.getElementById('instruction-text');
+            const instructionOptions = document.getElementById('instruction-options');
+            const instructionFeedback = document.getElementById('instruction-feedback');
+            
+            const test = tests[2];
+            const randomInstruction = test.instructions[Math.floor(Math.random() * test.instructions.length)];
+            
+            instructionText.textContent = randomInstruction.text;
+            instructionOptions.innerHTML = '';
+            
+            if (randomInstruction.options.length > 0) {
+                randomInstruction.options.forEach((option, index) => {
+                    const button = document.createElement('button');
+                    button.textContent = option;
+                    button.onclick = function() {
+                        if (index === randomInstruction.answer) {
+                            instructionFeedback.textContent = "Instruction followed correctly.";
+                            instructionFeedback.className = "success";
+                            gameState.score += 15;
+                            gameState.instructionsFollowed = true;
+                        } else {
+                            instructionFeedback.textContent = "Instruction not followed correctly.";
+                            instructionFeedback.className = "error";
+                            gameState.score += 5;
+                        }
+                        
+                        gameState.choices.push(`Test3: Selected "${option}", Expected "${randomInstruction.options[randomInstruction.answer]}"`);
+                        setTimeout(nextTest, 1000);
+                    };
+                    instructionOptions.appendChild(button);
+                });
+            } else {
+                const input = document.createElement('input');
+                input.type = "text";
+                input.id = "instruction-input";
+                instructionOptions.appendChild(input);
+                
+                const submit = document.createElement('button');
+                submit.textContent = "SUBMIT";
+                submit.onclick = function() {
+                    const answer = input.value.trim().toLowerCase();
+                    
+                    if (answer === randomInstruction.answer) {
+                        instructionFeedback.textContent = "Instruction followed correctly.";
+                        instructionFeedback.className = "success";
+                        gameState.score += 15;
+                        gameState.instructionsFollowed = true;
+                    } else {
+                        instructionFeedback.textContent = "Instruction not followed correctly.";
+                        instructionFeedback.className = "error";
+                        gameState.score += 5;
+                    }
+                    
+                    gameState.choices.push(`Test3: Typed "${answer}", Expected "${randomInstruction.answer}"`);
+                    setTimeout(nextTest, 1000);
+                };
+                instructionOptions.appendChild(submit);
+            }
+        }
+
+        // Test 4: Unsettling Message
+        function initTest4() {
+            const unsettlingMessage = document.getElementById('unsettling-message');
+            const messageFeeling = document.getElementById('message-feeling');
+            const messageSubmit = document.getElementById('message-submit');
+            const messageFeedback = document.getElementById('message-feedback');
+            
+            const test = tests[3];
+            const randomMessage = test.messages[Math.floor(Math.random() * test.messages.length)];
+            
+            unsettlingMessage.textContent = randomMessage;
+            
+            messageSubmit.onclick = function() {
+                const feeling = messageFeeling.value;
+                
+                if (feeling === "") {
+                    messageFeedback.textContent = "No response detected.";
+                    messageFeedback.className = "error";
+                    return;
+                }
+                
+                gameState.unsettlingResponse = feeling;
+                
+                if (feeling === "fear" || feeling === "uneasy") {
+                    messageFeedback.textContent = "Emotional response within expected parameters.";
+                    messageFeedback.className = "success";
+                    gameState.score += 10;
+                    gameState.hiddenScore += 5;
+                } else {
+                    messageFeedback.textContent = "Atypical response detected.";
+                    messageFeedback.className = "warning";
+                    gameState.score += 5;
+                }
+                
+                gameState.choices.push(`Test4: Felt "${feeling}" to message "${randomMessage}"`);
+                nextTest();
+            };
+        }
+
+        // Test 5: Background Music Truth
+        function initTest5() {
+            const musicAnswer = document.getElementById('music-answer');
+            const musicSubmit = document.getElementById('music-submit');
+            const musicFeedback = document.getElementById('music-feedback');
+            const musicPlayer = document.getElementById('music-player');
+            
+            const test = tests[4];
+            const randomAudio = test.audioFiles[Math.floor(Math.random() * test.audioFiles.length)];
+            
+            // Set up music player
+            musicPlayer.src = "Help.mp3"; // You'll need to provide this file
+            
+            musicSubmit.onclick = function() {
+                const answer = musicAnswer.value.trim().toLowerCase();
+                gameState.musicResponse = answer;
+                
+                if (answer === "No") {
+                    musicFeedback.textContent = "No response detected.";
+                    musicFeedback.className = "error";
+                    return;
+                }
+                
+                if (answer.includes(randomAudio.message)) {
+                    musicFeedback.textContent = "Hidden message detected. Interesting.";
+                    musicFeedback.className = "success";
+                    gameState.score += 15;
+                    gameState.hiddenScore += 10;
+                } else {
+                    musicFeedback.textContent = "No hidden message detected. Or was there?";
+                    musicFeedback.className = "warning";
+                    gameState.score += 5;
+                }
+                
+                gameState.choices.push(`Test5: Reported "${answer}", Expected "${randomAudio.message}"`);
+                nextTest();
+            };
+        }
+
+        // Test 6: Decryption Puzzle
+        function initTest6() {
+            const encryptedMessage = document.getElementById('encrypted-message');
+            const decryptionAnswer = document.getElementById('decryption-answer');
+            const decryptionSubmit = document.getElementById('decryption-submit');
+            const decryptionFeedback = document.getElementById('decryption-feedback');
+            
+            const test = tests[5];
+            const randomMessage = test.messages[Math.floor(Math.random() * test.messages.length)];
+            
+            encryptedMessage.textContent = randomMessage.encrypted;
+            
+            decryptionSubmit.onclick = function() {
+                const answer = decryptionAnswer.value.trim().toUpperCase();
+                
+                if (answer === "") {
+                    decryptionFeedback.textContent = "No response detected.";
+                    decryptionFeedback.className = "error";
+                    return;
+                }
+                
+                if (answer === randomMessage.decrypted) {
+                    decryptionFeedback.textContent = "Message decrypted successfully.";
+                    decryptionFeedback.className = "success";
+                    gameState.score += 20;
+                    gameState.hiddenScore += 15;
+                    gameState.decryptionCorrect = true;
+                } else {
+                    decryptionFeedback.textContent = "Decryption failed. Analyzing...";
+                    decryptionFeedback.className = "error";
+                    gameState.score += 5;
+                }
+                
+                gameState.choices.push(`Test6: Decrypted "${answer}", Expected "${randomMessage.decrypted}"`);
+                nextTest();
+            };
+        }
+
+        // Test 7: Mirror Test
+        function initTest7() {
+            const mirrorQuestions = document.getElementById('mirror-questions');
+            const mirrorSubmit = document.getElementById('mirror-submit');
+            const mirrorFeedback = document.getElementById('mirror-feedback');
+            
+            const test = tests[6];
+            
+            mirrorQuestions.innerHTML = '';
+            
+            test.questions.forEach((question, index) => {
+                const div = document.createElement('div');
+                div.innerHTML = `<p>${question}</p><input type="text" id="mirror-answer-${index}">`;
+                mirrorQuestions.appendChild(div);
+            });
+            
+            mirrorSubmit.onclick = function() {
+                const answers = [];
+                let allAnswered = true;
+                
+                test.questions.forEach((question, index) => {
+                    const answer = document.getElementById(`mirror-answer-${index}`).value.trim();
+                    if (answer === "") allAnswered = false;
+                    answers.push(answer);
+                    gameState.mirrorAnswers.push(answer);
+                    gameState.choices.push(`Test7: Q${index+1}: "${answer}"`);
+                });
+                
+                if (!allAnswered) {
+                    mirrorFeedback.textContent = "Please answer all questions.";
+                    mirrorFeedback.className = "error";
+                    return;
+                }
+                
+                // Check if they noticed the secret message
+                if (answers.some(a => a.toLowerCase().includes("secret") || 
+                    answers.some(a => a.toLowerCase().includes("hidden")))) {
+                    gameState.hiddenScore += 10;
+                }
+                
+                // Check if they remember the text color
+                if (answers.some(a => a.toLowerCase().includes("green") || 
+                    a.toLowerCase().includes("0f0") || 
+                    a.toLowerCase().includes("lime"))) {
+                    gameState.score += 5;
+                }
+                
+                // Check if they remember the number of tests
+                if (answers.some(a => a.includes("7") || a.includes("seven"))) {
+                    gameState.score += 5;
+                }
+                
+                // Check if they heard audio messages
+                if (answers.some(a => a.toLowerCase().includes("yes") || 
+                    a.toLowerCase().includes("heard"))) {
+                    gameState.hiddenScore += 5;
+                }
+                
+                mirrorFeedback.textContent = "Metacognitive analysis complete.";
+                mirrorFeedback.className = "success";
+                gameState.score += 10;
+                
+                nextTest();
+            };
+        }
+
+        // Test 8: Fake Virus
+        function initTest8() {
+            const virusProgress = document.getElementById('virus-progress');
+            const virusFeedback = document.getElementById('virus-feedback');
+            const virusButton = document.getElementById('virus-button');
+            
+            virusButton.onclick = function() {
+                gameState.virusClicks++;
+                virusProgress.style.width = (gameState.virusClicks / 30 * 100) + '%';
+                
+                if (gameState.virusClicks >= 30) {
+                    virusFeedback.textContent = "Virus contained. System stabilizing...";
+                    virusFeedback.className = "success";
+                    gameState.virusContained = true;
+                    gameState.score += 20;
+                    
+                    // Random chance to show fake virus screen
+                    if (Math.random() > 0.7) {
+                        showFakeVirus();
+                    } else {
+                        setTimeout(nextTest, 2000);
+                    }
+                }
+            };
+            
+            // Timeout if player doesn't click enough
+            setTimeout(function() {
+                if (!gameState.virusContained) {
+                    virusFeedback.textContent = "Containment failed. Proceeding with caution.";
+                    virusFeedback.className = "error";
+                    gameState.score += 5;
+                    nextTest();
+                }
+            }, 10000);
+        }
+
+        // Show fake virus screen
+        function showFakeVirus() {
+            const virusContainer = document.getElementById('virus-container');
+            const virusCount = document.getElementById('virus-count');
+            
+            virusContainer.style.display = "flex";
+            let clicksRemaining = 15;
+            virusCount.textContent = `CLICKS REMAINING: ${clicksRemaining}`;
+            
+            document.body.onclick = function() {
+                clicksRemaining--;
+                virusCount.textContent = `CLICKS REMAINING: ${clicksRemaining}`;
+                
+                if (clicksRemaining <= 0) {
+                    virusContainer.style.display = "none";
+                    document.body.onclick = null;
+                    setTimeout(nextTest, 1000);
+                }
+            };
+        }
+
+        // Final Evaluation
+        function initFinalScreen() {
+            const finalResult = document.getElementById('final-result');
+            const endingsContainer = document.getElementById('endings');
+            
+            // Calculate final scores
+            const totalScore = gameState.score;
+            const hiddenScore = gameState.hiddenScore;
+            const finalScore = totalScore + hiddenScore;
+            
+            // Determine ending
+            let ending = endings[0]; // Default to first ending
+            
+            for (let i = 0; i < endings.length; i++) {
+                if (totalScore >= endings[i].threshold && hiddenScore >= endings[i].hiddenThreshold) {
+                    ending = endings[i];
+                    break;
+                }
+            }
+            
+            // Special case for corrupted ending
+            if (gameState.virusClicks > 50 || 
+                gameState.choices.some(c => c.includes("CORRUPT")) || 
+                gameState.mirrorAnswers.some(a => a.toLowerCase().includes("corrupt"))) {
+                ending = endings[3]; // Corrupted ending
+            }
+            
+            // Display results
+            finalResult.innerHTML = `
+                <p>TEST COMPLETE</p>
+                <p>SCORE: ${totalScore}/100</p>
+                <p>HIDDEN SCORE: ${hiddenScore}/50</p>
+                <p>FINAL CLASSIFICATION: <span class="blink">${ending.title}</span></p>
+            `;
+            
+            endingsContainer.innerHTML = `
+                <h3>${ending.title}</h3>
+                <p>${ending.description}</p>
+                <p>YOUR CHOICES:</p>
+                <ul>
+                    ${gameState.choices.map(c => `<li>${c}</li>`).join('')}
+                </ul>
+            `;
+        }
+
+        // Proceed to next test
+        function nextTest() {
+            gameState.currentTest++;
+            
+            if (gameState.currentTest === 1) showScreen('test1-screen');
+            else if (gameState.currentTest === 2) showScreen('test2-screen');
+            else if (gameState.currentTest === 3) showScreen('test3-screen');
+            else if (gameState.currentTest === 4) showScreen('test4-screen');
+            else if (gameState.currentTest === 5) showScreen('test5-screen');
+            else if (gameState.currentTest === 6) showScreen('test6-screen');
+            else if (gameState.currentTest === 7) showScreen('test7-screen');
+            else if (gameState.currentTest === 8) showScreen('test8-screen');
+            else if (gameState.currentTest >= 9) showScreen('final-screen');
+        }
+
+        // Set up event listeners when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize game
+            initGame();
+            
+            // Set up button event listeners
+            document.getElementById('start-btn').addEventListener('click', function() {
+                showScreen('consent-screen');
+            });
+            
+            document.getElementById('consent-yes').addEventListener('click', function() {
+                gameState.choices.push("Consented to testing");
+                nextTest();
+            });
+            
+            document.getElementById('consent-no').addEventListener('click', function() {
+                gameState.choices.push("Did not consent to testing");
+                showScreen('final-screen');
+                document.getElementById('final-result').innerHTML = `
+                    <p>TEST TERMINATED</p>
+                    <p>Subject refused consent.</p>
+                    <p>FINAL CLASSIFICATION: <span class="error">TERMINATED</span></p>
+                `;
+            });
+            
+            document.getElementById('restart-btn').addEventListener('click', function() {
+                initGame();
+            });
+
+            // Easter egg - secret message
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    const secretMessage = document.getElementById('secret-message');
+                    secretMessage.classList.toggle('hidden');
+                    gameState.secretFound = true;
+                    gameState.hiddenScore += 20;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
