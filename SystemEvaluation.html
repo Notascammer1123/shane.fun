@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="icon" href="https://tr.rbxcdn.com/254bdb3f2cc5c06bcfbb3e6c0e99759d/420/420/Hat/Png" type="image/png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SYSTEM EVALUATION v3.1.4</title>
@@ -266,11 +265,11 @@
                 <p>Listen carefully to the audio sample.</p>
                 <p>Identify the hidden word or message.</p>
                 <audio controls id="audio-player">
-                    <source src="Don.mp3" type="audio/mpeg">
+                    <source src="static.mp3" type="audio/mpeg">
                     Your browser does not support the audio element.
                 </audio>
             </div>
-            <input type="text" id="Do not run" placeholder="What did you hear?">
+            <input type="text" id="audio-answer" placeholder="What did you hear?">
             <button id="audio-submit">SUBMIT</button>
             <p id="audio-feedback"></p>
         </div>
@@ -313,7 +312,7 @@
                 <p>Listen to the following audio carefully.</p>
                 <p>There may be hidden messages.</p>
                 <audio controls id="music-player">
-                    <source src="Don.mp3" type="audio/mpeg">
+                    <source src="static.mp3" type="audio/mpeg">
                     Your browser does not support the audio element.
                 </audio>
             </div>
@@ -411,9 +410,9 @@
             // Test 1: Visual Pattern Recognition
             {
                 patterns: [
-                    { sequence: "▲ ► ▼ ◄", options: ["►", "▼", "▲", "◄"], answer: 2 },
+                    { sequence: "▲ ► ▼ ◄", options: ["▲", "▼", "►", "◄"], answer: 1 },
                     { sequence: "□ ◇ □ ◇", options: ["□", "◇", "○", "△"], answer: 1 },
-                    { sequence: "♠ ♣ ♥ ♠", options: ["♠", "♣", "♥", "♦"], answer: 2 }
+                    { sequence: "♠ ♣ ♥ ♠", options: ["♣", "♠", "♥", "♦"], answer: 1 }
                 ]
             },
             // Test 2: Sound Identification
@@ -421,7 +420,7 @@
                 audioFiles: [
                     { answer: "Do not run" },
                     { answer: "do not run" },
-                    { answer: "Do not run." }
+                    { answer: "do not run" }
                 ]
             },
             // Test 3: Instruction Following
@@ -437,16 +436,16 @@
                 messages: [
                     "THEY CAN SEE YOU THROUGH THE SCREEN",
                     "YOUR PREVIOUS ATTEMPTS WERE FAILURES",
-                    "DO NOT-",
+                    "WE KNOW WHAT YOU DID LAST SUMMER",
                     "DON'T TURN AROUND"
                 ]
             },
             // Test 5: Background Music Truth
             {
                 audioFiles: [
-                    { message: "Listen I need help" },
+                    { message: "you are not being controlled" },
                     { message: "listen i need help" },
-                    { message: "Listen I need help." }
+                    { message: "listen i need help" }
                 ]
             },
             // Test 6: Decryption Puzzle
@@ -460,7 +459,7 @@
             // Test 7: Mirror Test
             {
                 questions: [
-                    "Did you notice anything unusual in Test 4?",
+                    "Did you notice anything unusual in Test 2?",
                     "What color was the text in the title screen?",
                     "How many tests have you completed so far?",
                     "Did you hear any hidden messages in the audio tests?"
@@ -600,7 +599,6 @@
             const randomAudio = test.audioFiles[Math.floor(Math.random() * test.audioFiles.length)];
             
             // Set up audio player
-            audioPlayer.src = "Help.mp3"; // You'll need to provide this file
             audioPlayer.src = "Don.mp3"; // You'll need to provide this file
             
             audioSubmit.onclick = function() {
@@ -745,7 +743,7 @@
                 const answer = musicAnswer.value.trim().toLowerCase();
                 gameState.musicResponse = answer;
                 
-                if (answer === "No") {
+                if (answer === "") {
                     musicFeedback.textContent = "No response detected.";
                     musicFeedback.className = "error";
                     return;
@@ -840,8 +838,8 @@
                 }
                 
                 // Check if they noticed the secret message
-                if (answers.some(a => a.toLowerCase().includes("secret") || 
-                    answers.some(a => a.toLowerCase().includes("hidden")))) {
+                if (answers.some(a => a.toLowerCase().includes("no") || 
+                    answers.some(a => a.toLowerCase().includes("no")))) {
                     gameState.hiddenScore += 10;
                 }
                 
