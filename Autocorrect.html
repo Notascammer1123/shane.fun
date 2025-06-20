@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>The REAL Autocorrct </title>
+<link rel="icon" href="http://cdn130.picsart.com/239043394001202.jpg" type="image/png">
+  <style>
+    body { font-family: sans-serif; background: #e5e5ea; padding: 20px;
+      display: flex; flex-direction: column; align-items: center; }
+    #header { display: flex; align-items: center; gap: 15px; margin-bottom: 10px; width:700px; }
+    #header img { width:60px; height:60px; border-radius:50%; object-fit:cover; }
+    #header span { font-size:28px; font-weight:bold; }
+    #brainrotBtn { margin-left:auto; padding:8px 12px; font-size:16px;
+      background:#ddd; border:none; border-radius:12px; cursor:pointer; }
+    #brainrotBtn.active { background:#0b93f6; color:white; }
+    #wrapper { position: relative; display: inline-block; }
+    input { padding:20px; font-size:24px; width:700px; border-radius:20px; border:none; margin-top:10px; }
+    #suggestion { 
+      position:absolute; 
+      top:-40px; 
+      left:0; 
+      right:0; 
+      font-size:20px;
+      background:#eee; 
+      padding:5px 10px; 
+      border-radius:20px; 
+      border:1px solid #aaa;
+      visibility:hidden; 
+      z-index:10;
+      display: flex;
+      justify-content: space-between;
+    }
+    #suggestion span { color: #666; font-size: 16px; }
+    #chatbox { margin-top:20px; width:700px; display:flex; flex-direction:column; gap:10px; }
+    .message { padding:10px 15px; max-width:70%; border-radius:20px; font-size:22px; display:inline-block; }
+    .right { align-self:flex-end; background:#0b93f6; color:white; }
+    .left { align-self:flex-start; background:#e5e5ea; color:black; border:1px solid #ccc; }
+  </style>
+</head>
+<body>
+  <div id="header">
+    <img src="https://tse3.mm.bing.net/th?id=OIP.32IHwKV_rwdo9VRBq7d1RgHaKN&pid=Api&P=0&h=180" alt="Profile">
+    <span>Bro</span>
+    <button id="brainrotBtn">Brainrot Mode OFF</button>
+  </div>
+
+  <div id="wrapper">
+    <div id="suggestion"></div>
+    <input id="input" placeholder="Type here..." autocomplete="off" />
+  </div>
+  <div id="chatbox"></div>
+
+  <script>
+    const brainrotMap = {
+      "this": "ts",
+      "that": "dat",
+      "you": "u",
+      "your": "ur",
+      "what": "wut",
+      "okay": "okie",
+      "really": "rlly",
+      "because": "cuz",
+      "going": "goin",
+      "don't": "dun",
+      "right": "ri",
+      "bro": "bruh",
+      "cool": "kewl",
+      "yes": "ya",
+      "no": "nah",
+      "piss me off": "pmo",
+      "I can't lie": "icl",
+      "pretty": "rizzable",
+      "beautiful": "rizzable", 
+      "giga-chad": "sigma",
+      "on god": "ong",
+      "oh my god": "omg",
+      "disease": "ligma", 
+      "cancer": "ligma",
+      "not good": "beta",
+      "amazing": "skibidi",
+      "steal": "Fanum Tax"
+    };
+
+    const randomCorrections = [
+      "Beep boop 🤖", "Banana mode 🍌", "Oops! 😬", "404 brain found", "Skibidi 🌍",
+      "Too much rizz 💅", "Sigma alert 🔥", "Bruh moment", "Delulu zone 🤡", "Ohio detected 🛸"
+    ];
+
+    const input = document.getElementById("input");
+    const suggestion = document.getElementById("suggestion");
+    const chatbox = document.getElementById("chatbox");
+    const btn = document.getElementById("brainrotBtn");
+    let brainrot = false;
+    let messageSide = "right";
+
+    btn.onclick = () => {
+      brainrot = !brainrot;
+      btn.classList.toggle("active", brainrot);
+      btn.textContent = brainrot ? "Brainrot Mode ON" : "Brainrot Mode OFF";
+    };
+
+    function checkMultiWord(text) {
+      // Check for multi-word matches in reverse order (longest first)
+      const phrases = Object.keys(brainrotMap).filter(k => k.includes(' '));
+      phrases.sort((a,b) => b.length - a.length); // Sort by length descending
+      
+      for (const phrase of phrases) {
+        if (text.toLowerCase().endsWith(phrase.toLowerCase())) {
+          const startPos = text.length - phrase.length;
+          return {
+            phrase: phrase,
+            startPos: startPos,
+            replacement: brainrotMap[phrase]
+          };
+        }
+      }
+      return null;
+    }
+
+    function getSuggestion(text) {
+      // First check for multi-word phrases
+      const multiWordMatch = checkMultiWord(text);
+      if (brainrot && multiWordMatch) {
+        return {
+          replacement: multiWordMatch.replacement,
+          explanation: `"${multiWordMatch.phrase}" → "${multiWordMatch.replacement}"`,
+          shouldReplace: true,
+          multiWord: true,
+          startPos: multiWordMatch.startPos
+        };
+      }
+
+      // Handle single words
+      const words = text.trim().split(/\s+/);
+      const lastWord = words[words.length - 1].toLowerCase();
+      
+      if (brainrot) {
+        if (brainrotMap[lastWord]) {
+          return { 
+            replacement: brainrotMap[lastWord],
+            explanation: `"${lastWord}" → "${brainrotMap[lastWord]}"`,
+            shouldReplace: true
+          };
+        }
+        return {
+          replacement: lastWord,
+          explanation: "No brainrot for this word",
+          shouldReplace: false
+        };
+      } else {
+        // In normal mode, suggest random corrections for any word
+        return {
+          replacement: randomCorrections[Math.floor(Math.random() * randomCorrections.length)],
+          explanation: "Random autocorrect",
+          shouldReplace: true
+        };
+      }
+    }
+
+    input.addEventListener("input", () => {
+      const text = input.value.trim();
+      if (text.length) {
+        const suggestionData = getSuggestion(text);
+        
+        suggestion.innerHTML = `
+          <div>${suggestionData.replacement}</div>
+          <span>${suggestionData.explanation}</span>
+        `;
+        suggestion.style.visibility = "visible";
+      } else {
+        suggestion.style.visibility = "hidden";
+      }
+    });
+
+    input.addEventListener("keydown", (e) => {
+      if (e.key === " ") {
+        e.preventDefault();
+        const text = input.value.trim();
+        if (text.length) {
+          const suggestionData = getSuggestion(text);
+          
+          if (suggestionData.shouldReplace) {
+            if (suggestionData.multiWord) {
+              input.value = text.substring(0, suggestionData.startPos) + 
+                           suggestionData.replacement + " ";
+            } else {
+              const words = text.split(/\s+/);
+              words[words.length - 1] = suggestionData.replacement;
+              input.value = words.join(" ") + " ";
+            }
+          } else {
+            input.value = text + " ";
+          }
+          
+          suggestion.style.visibility = "hidden";
+        }
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        let text = input.value.trim();
+        if (!text.length) return;
+
+        if (brainrot) {
+          // Process all possible replacements (including multi-word)
+          let changed;
+          do {
+            changed = false;
+            const suggestionData = getSuggestion(text);
+            if (suggestionData.shouldReplace) {
+              if (suggestionData.multiWord) {
+                text = text.substring(0, suggestionData.startPos) + 
+                       suggestionData.replacement + 
+                       text.substring(suggestionData.startPos + suggestionData.phrase.length);
+                changed = true;
+              } else {
+                const words = text.split(/\s+/);
+                const lastWord = words[words.length - 1];
+                if (brainrotMap[lastWord.toLowerCase()]) {
+                  words[words.length - 1] = brainrotMap[lastWord.toLowerCase()];
+                  text = words.join(" ");
+                  changed = true;
+                }
+              }
+            }
+          } while (changed);
+        } else {
+          // In normal mode, only replace the last word/part with random correction
+          const suggestionData = getSuggestion(text);
+          if (suggestionData.shouldReplace) {
+            if (suggestionData.multiWord) {
+              text = text.substring(0, suggestionData.startPos) + 
+                     suggestionData.replacement;
+            } else {
+              const words = text.split(/\s+/);
+              words[words.length - 1] = suggestionData.replacement;
+              text = words.join(" ");
+            }
+          }
+        }
+
+        const div = document.createElement("div");
+        div.className = `message ${messageSide}`;
+        div.textContent = text;
+        chatbox.appendChild(div);
+        input.value = "";
+        suggestion.style.visibility = "hidden";
+        messageSide = messageSide === "right" ? "left" : "right";
+      }
+    });
+  </script>
+</body>
+</html>
