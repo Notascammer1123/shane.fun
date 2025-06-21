@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pet the Cat 😺</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: #fff9e6;
+            padding: 20px;
+            margin: 0;
+            min-height: 100vh;
+            user-select: none;
+            overflow-x: hidden;
+        }
+        .cat {
+            font-size: 200px;
+            cursor: pointer;
+            margin: 20px 0;
+            padding: 0;
+            line-height: 0.8;
+            transition: transform 0.2s;
+            animation: float 3s ease-in-out infinite;
+        }
+        .message {
+            font-size: 24px;
+            color: #ff6b6b;
+            height: 40px;
+            margin: 15px;
+            font-weight: bold;
+        }
+        .counter {
+            font-size: 18px;
+            color: #666;
+        }
+        .mood-meter {
+            width: 80%;
+            height: 20px;
+            background: #eee;
+            margin: 20px auto;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .mood-level {
+            height: 100%;
+            width: 50%;
+            background: linear-gradient(to right, #ff6b6b, #ffb347, #4caf50);
+            transition: width 0.5s;
+        }
+        .scratch-marks {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><path d="M10,10 L90,90 M30,10 L80,60 M10,30 L60,80" stroke="black" stroke-width="2" stroke-linecap="round"/></svg>');
+            opacity: 0;
+            z-index: 100;
+            transition: opacity 0.5s;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        @keyframes nuzzle {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-10deg); }
+            75% { transform: rotate(10deg); }
+        }
+        @keyframes scratch {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { opacity: 0.3; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Pet the Cat 😺</h1>
+    <div class="message" id="message"></div>
+    <div class="cat" id="cat">😺</div>
+    <div class="counter" id="counter">Pets: 0</div>
+    <div class="mood-meter">
+        <div class="mood-level" id="mood"></div>
+    </div>
+    <p>Mood: <span id="mood-text">Neutral</span></p>
+    <div class="scratch-marks" id="scratch-marks"></div>
+
+    <!-- Audio elements -->
+    <audio id="purr-sound" src="pur.mp3"></audio>
+    <audio id="hiss-sound" src="angry.mp3"></audio>
+    <audio id="meow-sound" src="hmhap.mp3"></audio>
+    <audio id="happy-sound" src="Happy.mp3"></audio>
+    <audio id="scratch-sound" src="scratch.mp3"></audio>
+
+    <script>
+        const cat = document.getElementById('cat');
+        const message = document.getElementById('message');
+        const counter = document.getElementById('counter');
+        const moodMeter = document.getElementById('mood');
+        const moodText = document.getElementById('mood-text');
+        const scratchMarks = document.getElementById('scratch-marks');
+        
+        // Cat states
+        const cats = {
+            happy: ['😸', '😻', '😺', '🐱', '😽'],
+            playful: ['😹', '🙀', '😼'],
+            angry: ['😾', '👿'],
+            sleepy: ['😿', '😴', '💤']
+        };
+        
+        // Mood system (0 = angry, 100 = blissful)
+        let mood = 50;
+        let clickCount = 0;
+        let isAngry = false;
+        
+        // Sound effects
+        const purrSound = document.getElementById('purr-sound');
+        const hissSound = document.getElementById('hiss-sound');
+        const meowSound = document.getElementById('meow-sound');
+        const happySound = document.getElementById('happy-sound');
+        const scratchSound = document.getElementById('scratch-sound');
+        
+        // Update mood meter
+        function updateMood() {
+            moodMeter.style.width = `${mood}%`;
+            if (mood <= 0) {
+                moodText.textContent = "DANGER! 😾";
+                if (!isAngry) {
+                    showScratchMarks();
+                    isAngry = true;
+                }
+            }
+            else if (mood < 20) moodText.textContent = "Furious 👿";
+            else if (mood < 40) moodText.textContent = "Grumpy 😼";
+            else if (mood < 60) moodText.textContent = "Neutral 🐱";
+            else if (mood < 80) moodText.textContent = "Happy 😸";
+            else moodText.textContent = "Blissful 😻";
+        }
+        
+        function showScratchMarks() {
+            scratchSound.play();
+            scratchMarks.style.opacity = '0.3';
+            setTimeout(() => {
+                scratchMarks.style.opacity = '0';
+            }, 1000);
+            
+            // Create animated scratch marks
+            for (let i = 0; i < 5; i++) {
+                const scratch = document.createElement('div');
+                scratch.style.position = 'fixed';
+                scratch.style.width = '100px';
+                scratch.style.height = '100px';
+                scratch.style.left = `${Math.random() * 80 + 10}%`;
+                scratch.style.top = `${Math.random() * 80 + 10}%`;
+                scratch.style.backgroundImage = 'url("data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"100\" height=\"100\" viewBox=\"0 0 100 100\"><path d=\"M10,10 L90,90 M30,10 L80,60 M10,30 L60,80\" stroke=\"rgba(0,0,0,0.7)\" stroke-width=\"3\" stroke-linecap=\"round\"/></svg>")';
+                scratch.style.pointerEvents = 'none';
+                scratch.style.zIndex = '100';
+                scratch.style.animation = 'scratch 1s forwards';
+                document.body.appendChild(scratch);
+                
+                setTimeout(() => {
+                    document.body.removeChild(scratch);
+                }, 1000);
+            }
+        }
+        
+        // Play random cat reaction
+        function react() {
+            let reaction;
+            let moodChange = 0;
+            
+            if (mood <= 0) {
+                // Maximum anger
+                reaction = cats.angry[Math.floor(Math.random() * cats.angry.length)];
+                message.textContent = ["GRRRR!", "HISSSS!", "SCRATCH!", ">:("][Math.floor(Math.random() * 4)];
+                hissSound.play();
+                cat.style.animation = "shake 0.5s linear";
+                showScratchMarks();
+                moodChange = -5; // Stays angry longer
+            } 
+            else if (mood < 20 && Math.random() < 0.8) {
+                // Angry
+                reaction = cats.angry[Math.floor(Math.random() * cats.angry.length)];
+                message.textContent = "Hiss! >:(";
+                hissSound.play();
+                cat.style.animation = "shake 0.3s linear";
+                moodChange = -3;
+            } 
+            else if (mood > 80 && Math.random() < 0.6) {
+                // Blissful
+                reaction = cats.happy[Math.floor(Math.random() * cats.happy.length)];
+                message.textContent = "Purrrrr... 💖";
+                happySound.play();
+                cat.style.animation = "nuzzle 0.5s linear";
+                moodChange = 2;
+            } 
+            else if (mood > 60 && Math.random() < 0.4) {
+                // Playful
+                reaction = cats.playful[Math.floor(Math.random() * cats.playful.length)];
+                message.textContent = "Meow! 😹";
+                meowSound.play();
+                moodChange = 1;
+            } 
+            else {
+                // Neutral
+                reaction = cats.happy[Math.floor(Math.random() * cats.happy.length)];
+                if (Math.random() < 0.3) {
+                    message.textContent = "Purr...";
+                    purrSound.play();
+                    moodChange = 1;
+                }
+            }
+            
+            // Apply mood change
+            mood += moodChange;
+            mood = Math.max(0, Math.min(100, mood));
+            updateMood();
+            
+            cat.textContent = reaction;
+            setTimeout(() => {
+                message.textContent = "";
+                cat.style.animation = "float 3s ease-in-out infinite";
+            }, 1500);
+        }
+        
+        // Handle click
+        cat.addEventListener('click', () => {
+            clickCount++;
+            counter.textContent = `Pets: ${clickCount}`;
+            
+            // React (mood changes are now handled within react())
+            react();
+            
+            // Milestones
+            if (clickCount === 10) {
+                message.textContent = "The cat watches you... 👀";
+                setTimeout(() => message.textContent = "", 2000);
+            } 
+            else if (clickCount === 25) {
+                message.textContent = "Certified Cat Petter! 📜";
+                setTimeout(() => message.textContent = "", 2000);
+            } 
+            else if (clickCount === 100) {
+                message.textContent = "The cat owns you now. 👑";
+                setTimeout(() => message.textContent = "", 2000);
+            }
+        });
+        
+        // Initialize
+        updateMood();
+    </script>
+</body>
+</html>
