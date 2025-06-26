@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" href="https://images.emojiterra.com/google/android-11/1024px/1f30e.png" type="image/png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Size of Earth</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            color: white;
+            font-family: Arial, sans-serif;
+            overflow-x: hidden;
+            height: 500vh; /* Extra scroll space */
+        }
+        
+        .scale-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .scale-item {
+            position: absolute;
+            text-align: center;
+            transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+            opacity: 0;
+            transform: scale(0.5);
+            width: 80%;
+            max-width: 600px;
+        }
+        
+        .scale-item.active {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        .scale-item img {
+            max-width: 100%;
+            max-height: 60vh;
+            object-fit: contain;
+            filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.2));
+        }
+        
+        .scale-info {
+            margin-top: 20px;
+            font-size: 1.5em;
+        }
+        
+        .scale-name {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        
+        .scale-size {
+            opacity: 0.8;
+        }
+        
+        .earth-reference {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.2em;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+        }
+        
+        .nav-buttons {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: all 0.3s;
+        }
+        
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #ff4d4d, #f9cb28);
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    
+    <div class="scale-container" id="scaleContainer">
+        <!-- Items will be added dynamically -->
+    </div>
+    
+    <div class="earth-reference" id="earthReference">
+        Earth diameter: 12,742 km
+    </div>
+    
+    <div class="nav-buttons">
+        <button class="nav-btn" id="btnPrev">▲</button>
+        <button class="nav-btn" id="btnNext">▼</button>
+    </div>
+
+    <script>
+        // Scale data - replace with your actual images
+        const scaleData = [
+            { name: "Electron", size: "0.000000000000001 m", image: "elec.png" },
+            { name: "Atom", size: "0.1 nanometers", image: "at.png" },
+            { name: "Water Molecule", size: "0.3 nm", image: "wm.png" },
+            { name: "Adenovirus", size: "90 nm", image: "https://smart.servier.com/wp-content/uploads/2016/10/adenovirus_f.png" },
+            { name: "Mycoplasma Bacteria", size: "200 nm", image: "mycos.png" },
+            { name: "Red Blood Cell", size: "7 microns", image: "https://www.microscopemaster.com/images/Red_blood_cell.png" },
+            { name: "Grain of Sand", size: "0.5 mm", image: "sand.png" },
+            { name: "Grain of Sugar", size: "1 mm", image: "suga.png" },
+            { name: "Water Droplet", size: "2 mm", image: "https://cdn.creazilla.com/cliparts/64373/water-droplet-clipart-xl.png" },
+            { name: "Ladybug", size: "1 cm", image: "lad.png" },
+            { name: "Frog", size: "7 cm", image: "https://openclipart.org/image/800px/342905" },
+            { name: "Chameleon", size: "35 cm", image: "https://www.pngplay.com/wp-content/uploads/7/Chameleon-Vector-Background-PNG-Image.png" },
+            { name: "German Shephard", size: "74cm", image: "gs.png" },
+            { name: "Human", size: "1.75 m", image: "hum.png" },
+            { name: "Giraffe", size: "5.5 cm", image: "https://gallery.yopriceville.com/downloadfullsize/send/24936.png" },
+            { name: "Space Shuttle", size: "56 m", image: "roc.png" },
+            { name: "Saturn V", size: "111m", image: "https://cdn.pixabay.com/photo/2023/10/05/22/23/saturn-v-8297056_960_720.png" },
+            { name: "Hyperion Tree", size: "116 m", image: "https://cdn.pixabay.com/photo/2023/10/15/04/38/tree-8316166_960_720.png" },
+            { name: "Eiffel Tower", size: "330 m", image: "https://spaces-cdn.clipsafari.com/ggdtatdw5xs7lm43owjasw7y9e9g" },
+            { name: "Burj Khalifa", size: "830 m", image: "https://cdn.pixabay.com/photo/2023/08/23/03/14/burj-khalifa-8207549_960_720.png" },
+            { name: "Mount St. Helens", size: "2549 m", image: "mt.png" },
+            { name: "Currant Peak", size: "3511 m", image: "mts.png" },
+            { name: "Mount Ranier", size: "4.4 km", image: "raine.png" },
+            { name: "Denali", size: "6.19 km", image: "mena.png" },
+            { name: "Mount Everest", size: "9 km", image: "ever.png" },
+            { name: "Earth", size: "12,742 km", image: "http://clipart-library.com/newimages/clip-art-earth-3.png" },
+            { name: "But..."},
+            { name: "It is only 0.0000000000000002% of the galaxy", size: "1.5 trillion solar masses", image: "gal.png" },
+            { name: "And 0.0000000000000000000000000015% of the Observable Universe", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Observable_universe_logarithmic_illustration_with_legends.png/1200px-Observable_universe_logarithmic_illustration_with_legends.png" },
+            { name: "So if the universe was as big as earth, it would be smaller than a proton!", image: "pro.png"},
+            { name: "Created by Shane Phillip <br> Inspiration by BlenderTimer on YT", image: "https://yt3.googleusercontent.com/HQEstE1NfHyMX2YWWtkY9Yf6XyJhv3UTDP0JwCIDNdMpuuEm_OU_QZuCbaVmhGxGF92TZb1IYw=s160-c-k-c0x00ffffff-no-rj" },
+        ];
+
+        // Initialize
+        const container = document.getElementById('scaleContainer');
+        const earthRef = document.getElementById('earthReference');
+        const progressBar = document.getElementById('progressBar');
+        let currentIndex = 0;
+        let isAnimating = false;
+
+        // Create scale items
+        scaleData.forEach((item, index) => {
+            const scaleItem = document.createElement('div');
+            scaleItem.className = 'scale-item';
+            scaleItem.dataset.index = index;
+            scaleItem.innerHTML = `
+                <img src="${item.image}" alt="${item.name}">
+                <div class="scale-info">
+                    <div class="scale-name">${item.name}</div>
+                    <div class="scale-size">${item.size}</div>
+                </div>
+            `;
+            container.appendChild(scaleItem);
+        });
+
+        const scaleItems = document.querySelectorAll('.scale-item');
+        const btnPrev = document.getElementById('btnPrev');
+        const btnNext = document.getElementById('btnNext');
+
+        // Set initial active item
+        updateActiveItem();
+
+        // Navigation functions
+        function goToNext() {
+            if (currentIndex < scaleData.length - 1 && !isAnimating) {
+                currentIndex++;
+                updateActiveItem();
+                scrollToCurrent();
+            }
+        }
+
+        function goToPrev() {
+            if (currentIndex > 0 && !isAnimating) {
+                currentIndex--;
+                updateActiveItem();
+                scrollToCurrent();
+            }
+        }
+
+        function updateActiveItem() {
+            isAnimating = true;
+            
+            // Update classes
+            scaleItems.forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            scaleItems[currentIndex].classList.add('active');
+            earthRef.textContent = `Earth diameter: 12,742 km | Viewing: ${scaleData[currentIndex].name}`;
+            
+            // Update progress bar
+            progressBar.style.width = `${(currentIndex / (scaleData.length - 1)) * 100}%`;
+            
+            setTimeout(() => {
+                isAnimating = false;
+            }, 800);
+        }
+
+        function scrollToCurrent() {
+            const scrollHeight = (currentIndex / (scaleData.length - 1)) * (document.body.scrollHeight - window.innerHeight);
+            window.scrollTo({
+                top: scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+
+        // Event listeners
+        btnNext.addEventListener('click', goToNext);
+        btnPrev.addEventListener('click', goToPrev);
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowDown') {
+                goToNext();
+            } else if (e.key === 'ArrowUp') {
+                goToPrev();
+            }
+        });
+
+        // Scroll detection (optional)
+        window.addEventListener('wheel', (e) => {
+            if (e.deltaY > 0) {
+                goToNext();
+            } else {
+                goToPrev();
+            }
+        }, { passive: true });
+    </script>
+</body>
+</html>
