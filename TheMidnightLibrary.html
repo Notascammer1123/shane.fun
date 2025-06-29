@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="icon" href="https://cdn.kobo.com/book-images/710f0745-2a72-4fca-b20f-ca822b2f9913/1200/1200/False/the-midnight-library-the-no-1-sunday-times-bestseller-and-worldwide-phenomenon.jpg" type="image/png">
+  <title>The Midnight Library Catalog</title>
+  <style>
+    body {
+      font-family: "Palatino Linotype", serif;
+      background: #121217;
+      color: #f2f2f2;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: linear-gradient(145deg, #1a1a2d, #2e2e48);
+      color: #e0d7ff;
+      padding: 40px;
+      text-align: center;
+      font-size: 2.5em;
+      letter-spacing: 1.5px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.6);
+    }
+    .subtitle {
+      font-size: 1.1em;
+      margin-top: 10px;
+      font-style: italic;
+      color: #a28bff;
+    }
+    .container {
+      padding: 40px;
+      max-width: 900px;
+      margin: auto;
+    }
+    .bookshelf {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      background: url('https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Wooden_bookshelf_background.jpg/800px-Wooden_bookshelf_background.jpg') repeat;
+      padding: 30px;
+      border-radius: 10px;
+    }
+    .book {
+      width: 80px;
+      height: 120px;
+      background-image: url('book.png');
+      background-size: cover;
+      background-position: center;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .book:hover {
+      transform: scale(1.1);
+    }
+    .pagination {
+      text-align: center;
+      margin-top: 30px;
+    }
+    .pagination button {
+      background: #2f2f45;
+      border: none;
+      color: #c7bfff;
+      padding: 10px 20px;
+      margin: 5px;
+      font-size: 1em;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .pagination button:hover {
+      background: #3e3e5e;
+    }
+    #overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      display: none;
+      z-index: 999;
+    }
+    #bookDetail {
+      background: #1e1e2f;
+      padding: 30px;
+      max-width: 500px;
+      border: 2px solid #8a2be2;
+      box-shadow: 0 0 30px rgba(138,43,226,0.5);
+      text-align: left;
+    }
+    #bookDetail h2 {
+      margin-top: 0;
+      color: #bb86fc;
+    }
+    #bookDetail p {
+      margin-top: 10px;
+      color: #d4d4e0;
+    }
+    #closeBtn {
+      margin-top: 20px;
+      background: #2f2f45;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+    }
+    footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 0.9em;
+      background: #1a1a2a;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    The Midnight Library Catalog
+    <div class="subtitle">Explore the infinite lives you could have lived</div>
+  </header>
+  <div class="container">
+    <div class="bookshelf" id="catalog"></div>
+    <div class="pagination">
+      <button onclick="changePage(-1)">Previous</button>
+      <button onclick="changePage(1)">Next</button>
+    </div>
+  </div>
+
+  <div id="overlay">
+    <div id="bookDetail">
+      <h2 id="detailTitle"></h2>
+      <p id="detailSummary"></p>
+      <button id="closeBtn" onclick="document.getElementById('overlay').style.display='none'">Close</button>
+    </div>
+  </div>
+
+  <footer>
+    Inspired by <em>The Midnight Library</em> by Matt Haig. Every life matters.
+  </footer>
+
+  <script>
+    const catalog = document.getElementById('catalog');
+    const overlay = document.getElementById('overlay');
+    const detailTitle = document.getElementById('detailTitle');
+    const detailSummary = document.getElementById('detailSummary');
+
+    const booksPerPage = 8;
+    let currentPage = 0;
+
+    const books = [
+      {
+        title: "The Life Where You Became a Jazz Pianist",
+        summary: "You pursued your passion for music and perform nightly in smoky Parisian bars above a record store.",
+      },
+      {
+        title: "The Life Where You Moved to Iceland",
+        summary: "You became a hiking guide near Reykjavik. You live by geysers with three huskies and see the northern lights daily.",
+      },
+      {
+        title: "The Life Where You Said Yes",
+        summary: "You accepted that one big opportunity. Now, you're a TED speaker, bestselling author, and global inspiration.",
+      },
+      {
+        title: "The Life Where You Never Left Home",
+        summary: "You opened a cozy bakery in your hometown. Locals love your cinnamon rolls. It's a quiet, lovely life.",
+      },
+      {
+        title: "The Life Where You Became a Deep Sea Explorer",
+        summary: "You joined a submarine expedition to explore bioluminescent creatures. You even found one no one had ever seen before.",
+      },
+      {
+        title: "The Life Where You Lived Among Wolves",
+        summary: "You abandoned civilization and became part of a wolf pack in Alaska. You are respected as one of them.",
+      },
+      {
+        title: "The Life Where You Traveled Through Time",
+        summary: "You discovered a temporal rift and now drift between centuries, recording forgotten stories and lost futures.",
+      },
+      {
+        title: "The Life Where You Painted Dreams",
+        summary: "You became an artist whose paintings reveal dreams before they happen. People fear and admire your gallery."},
+    { title: "The Life Where You Were a Cloud Watcher", summary: "You spent your days cataloging clouds from mountaintops, predicting the weather with eerie accuracy." },
+    { title: "The Life Where You Built a Lighthouse", summary: "You spent years alone by the sea building and maintaining a lighthouse. Sailors write you letters of thanks." },
+    { title: "The Life Where You Solved the Unsolvable", summary: "You cracked a centuries-old mystery and were never seen again, vanishing into the legend you solved." },
+    { title: "The Life Where You Became a Forest Whisperer", summary: "You live deep in an ancient forest and animals follow you, sensing the wisdom you carry." },
+    { title: "The Life Where You Danced with Fireflies", summary: "Every midsummer night, fireflies come to your cottage in thousands, lighting up the trees with magic." },
+    { title: "The Life Where You Were a Secret Keeper", summary: "People from across the world tell you their deepest truths. You remember every single one and never speak a word." },
+    { title: "The Life Where You Designed Impossible Mazes", summary: "Your mazes are unsolvable by machines, yet children solve them by instinct. You never explain how." },
+    { title: "The Life Where You Wrote the Book of Fog", summary: "Your journal, scribbled only on fogged mirrors, predicted every major event for 100 years." },
+
+    { title: "The Life Where You Grew a Garden of Stars", summary: "Your greenhouse blooms with bioluminescent plants. Astronomers visit to learn their language." },
+    { title: "The Life Where You Counted Falling Leaves", summary: "Every autumn, you retreat to a temple and count leaves for peace. One year, you vanished with the wind." },
+    { title: "The Life Where You Dreamed the Future", summary: "Governments feared your sleep. They monitored your dreams. Some say you're still dreaming..." },
+    { title: "The Life Where You Met Yourself", summary: "In a mirrored world, you found another version of you. You didn’t speak. You simply nodded and walked away." }
+      
+    ];
+
+    function renderPage() {
+      catalog.innerHTML = '';
+      const start = currentPage * booksPerPage;
+      const end = start + booksPerPage;
+      const pageBooks = books.slice(start, end);
+
+      pageBooks.forEach((book, index) => {
+        const div = document.createElement('div');
+        div.className = 'book';
+        div.title = book.title;
+        div.onclick = () => openBook(book);
+        catalog.appendChild(div);
+      });
+    }
+
+    function openBook(book) {
+      detailTitle.textContent = book.title;
+      detailSummary.textContent = book.summary;
+      overlay.style.display = 'flex';
+    }
+
+    function changePage(direction) {
+      const maxPage = Math.floor(books.length / booksPerPage);
+      currentPage += direction;
+      if (currentPage < 0) currentPage = 0;
+      if (currentPage > maxPage) currentPage = maxPage;
+      renderPage();
+    }
+
+    renderPage();
+  </script>
+</body>
+</html>

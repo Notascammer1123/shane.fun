@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="icon" href="http://2.bp.blogspot.com/-cLRj2YmsWOM/Tf1I6sMSB3I/AAAAAAAACO4/H5qHh3mFT1g/s1600/GeniusFiles.jpg" type="image/jpg">
+  <title>Amazing But True</title>
+  <style>
+    body {
+      font-family: Georgia, serif;
+      background: #fdf6e3;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+    header {
+      background: #ff4136;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      font-size: 2em;
+      letter-spacing: 1px;
+    }
+    .subtitle {
+      font-size: 1em;
+      margin-top: -15px;
+      font-style: italic;
+    }
+    .container {
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+    }
+    .article {
+      background: white;
+      padding: 15px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .article h2 {
+      margin-top: 0;
+    }
+    .source {
+      font-size: 0.9em;
+      color: #888;
+      margin-bottom: 10px;
+    }
+    .article img {
+      max-width: 100%;
+      display: block;
+      margin: 10px 0;
+    }
+    footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 0.9em;
+      background: #eee;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    Amazing But True
+    <div class="subtitle">Real stories you won't believe – updated daily</div>
+  </header>
+  <div class="container" id="articles">
+    <p>Loading stories...</p>
+  </div>
+  <footer>
+    Site inspired by <em>The Genius Files</em> by Dan Gutman. Built by fans.
+  </footer>
+
+  <script>
+    const container = document.getElementById('articles');
+
+    const rssURL = encodeURIComponent('https://rss.upi.com/news/odd_news.rss');
+    const proxyURL = `https://api.allorigins.win/get?url=${rssURL}`;
+
+    fetch(proxyURL)
+      .then(response => {
+        if (response.ok) return response.json();
+        throw new Error('Network response was not ok.');
+      })
+      .then(data => {
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(data.contents, "text/xml");
+        const items = xmlDoc.querySelectorAll("item");
+        container.innerHTML = '';
+
+        for (let i = 0; i < Math.min(3, items.length); i++) {
+          const item = items[i];
+          const title = item.querySelector("title").textContent;
+          let description = item.querySelector("description").textContent;
+          const pubDate = new Date(item.querySelector("pubDate").textContent).toDateString();
+
+          // Extract and remove image tag from description
+          const imgMatch = description.match(/<img[^>]+src=["']([^"']+)["']/);
+          const imageUrl = imgMatch ? imgMatch[1] : null;
+          description = description.replace(/<img[^>]*>/g, '');
+
+          const div = document.createElement('div');
+          div.className = 'article';
+          div.innerHTML = `
+            <h2>${title}</h2>
+            <div class="source">From: UPI Odd News | ${pubDate}</div>
+            ${imageUrl ? `<img src="${imageUrl}" alt="Article Image">` : ''}
+            <p>${description}</p>
+          `;
+          container.appendChild(div);
+        }
+      })
+      .catch(() => {
+        container.innerHTML = '<p>Could not load articles. Please check your internet connection or try again later.</p>';
+      });
+  </script>
+</body>
+</html>
