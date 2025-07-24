@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" href="https://assets.streamlinehq.com/image/private/w_512,h_512,ar_1/f_auto/v1/icons/3/spiral-calendar-flat-hhbtygmdyh1mbyr6fylusi.png/spiral-calendar-flat-wuh16f11mhknd12xfj2e.png?_a=DATAg1XyZAA0" type="image/png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>__ Of The Day!</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        .category-buttons {
+            display: flex;
+            font-family: 'Comic Sans MS', sans-serif;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 15px;
+            border: none;
+            font-family: 'Comic Sans MS', sans-serif;
+            border-radius: 5px;
+            background-color: #3498db;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .display-area {
+            min-height: 200px;
+            border: 1px dashed #ccc;
+            border-radius: 5px;
+            padding: 20px;
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .word {
+            font-size: 2em;
+            font-weight: bold;
+            color: #e74c3c;
+        }
+        .definition {
+            font-style: italic;
+            margin-top: 10px;
+        }
+        .sentence {
+            font-size: 1.2em;
+            line-height: 1.6;
+        }
+        .image-container img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 5px;
+        }
+        .fact {
+            font-size: 1.2em;
+            line-height: 1.6;
+        }
+        .news-link {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 15px;
+            background-color: #2ecc71;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .date-display {
+            margin-bottom: 20px;
+            color: #7f8c8d;
+        }
+        .day-counter {
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>___ of The Day!</h1>
+        <div class="date-display" id="current-date"></div>
+        
+        <div class="category-buttons">
+            <button onclick="showWordOfTheDay()">Word of the Day</button>
+            <button onclick="showSentenceOfTheDay()">Sentence of the Day</button>
+            <button onclick="showImageOfTheDay()">Image of the Day</button>
+            <button onclick="showFactOfTheDay()">Fact of the Day</button>
+            <button onclick="showNewsOfTheDay()">News of the Day</button>
+        </div>
+        
+        <div class="display-area" id="display-area">
+            <p>Click a button above to see today's selection!</p>
+        </div>
+        <div class="day-counter" id="day-counter"></div>
+    </div>
+
+    <script>
+        // 50 days worth of content for each category (except news which has just one link)
+        const dailyContent = {
+            words: [
+                { word: "Serendipity", definition: "The occurrence of events by chance in a happy or beneficial way.", example: "Finding that rare book at the flea market was pure serendipity." },
+                { word: "Ephemeral", definition: "Lasting for a very short time.", example: "The ephemeral beauty of cherry blossoms reminds us to appreciate the present." },
+                { word: "Quintessential", definition: "Representing the most perfect or typical example of a quality or class.", example: "The little black dress is the quintessential wardrobe staple." },
+                { word: "Petrichor", definition: "The pleasant earthy scent produced when rain falls on dry soil.", example: "After months of drought, the petrichor was especially welcoming." },
+                { word: "Sonder", definition: "The realization that each passerby has a life as vivid and complex as your own.", example: "Walking through the city, I was struck by a profound sense of sonder." },
+                { word: "Liminal", definition: "Relating to a transitional or initial stage of a process.", example: "The airport felt like a liminal space between vacation and real life." },
+                { word: "Aurora", definition: "A natural light display in the sky, especially in polar regions.", example: "We traveled to Norway hoping to see the aurora borealis." },
+                { word: "Ethereal", definition: "Extremely delicate and light in a way that seems too perfect for this world.", example: "The ballet dancer moved with an ethereal grace." },
+                { word: "Halcyon", definition: "Denoting a period of time in the past that was idyllically happy and peaceful.", example: "She often reminisced about the halcyon days of her childhood summers." },
+                { word: "Luminous", definition: "Full of or shedding light; bright or shining, especially in the dark.", example: "The full moon cast a luminous glow over the lake." },
+                { word: "Bombinate", definition: "To make a buzzing or humming noise.", example: "The bees continued to bombinate around the hive all afternoon." },
+                { word: "Epiphany", definition: "A moment of sudden and great revelation or realization.", example: "While showering, he had an epiphany about how to solve the problem." },
+                { word: "Fernweh", definition: "A longing for far-off places, stronger than wanderlust.", example: "Looking at travel magazines gave her an intense feeling of fernweh." },
+                { word: "Gambol", definition: "To run or jump about playfully.", example: "The lambs gamboled in the meadow on the first warm day of spring." },
+                { word: "Hiraeth", definition: "A homesickness for a home to which you cannot return.", example: "The old photographs gave her a deep sense of hiraeth for her childhood home." },
+                { word: "Ineffable", definition: "Too great or extreme to be expressed or described in words.", example: "The beauty of the sunset was ineffable, leaving us speechless." },
+                { word: "Jubilant", definition: "Feeling or expressing great happiness and triumph.", example: "The team was jubilant after winning the championship." },
+                { word: "Kaleidoscopic", definition: "Having complex patterns of colors; constantly changing.", example: "The kaleidoscopic display of fireworks lit up the night sky." },
+                { word: "Lagniappe", definition: "Something given as a bonus or extra gift.", example: "The baker included a free cookie as a lagniappe with our order." },
+                { word: "Mellifluous", definition: "Sweet or musical; pleasant to hear.", example: "Her mellifluous voice was perfect for narrating audiobooks." },
+                { word: "Nebulous", definition: "Unclear, vague, or ill-defined.", example: "His explanation of the concept remained nebulous despite several examples." },
+                { word: "Obfuscate", definition: "To deliberately make something difficult to understand.", example: "The politician tried to obfuscate the truth with complicated jargon." },
+                { word: "Panacea", definition: "A solution or remedy for all difficulties or diseases.", example: "The new policy was touted as a panacea for the company's financial problems." },
+                { word: "Quixotic", definition: "Extremely idealistic; unrealistic and impractical.", example: "His quixotic quest to end world hunger was admirable but ultimately unsuccessful." },
+                { word: "Resplendent", definition: "Attractive and impressive through being richly colorful or sumptuous.", example: "The queen appeared in resplendent robes for the coronation." },
+                { word: "Susurrus", definition: "Whispering, murmuring, or rustling.", example: "The susurrus of leaves in the wind was the only sound in the forest." },
+                { word: "Tryst", definition: "A private romantic rendezvous between lovers.", example: "They arranged a tryst at their favorite café." },
+                { word: "Ubiquitous", definition: "Present, appearing, or found everywhere.", example: "Smartphones have become ubiquitous in modern society." },
+                { word: "Vellichor", definition: "The strange wistfulness of used bookstores.", example: "The vellichor of the old bookstore made her want to stay all afternoon." },
+                { word: "Wanderlust", definition: "A strong desire to travel.", example: "Her wanderlust led her to visit over 30 countries before turning 30." },
+                { word: "Xenial", definition: "Relating to hospitality between host and guest.", example: "The xenial traditions of the culture included elaborate welcoming ceremonies." },
+                { word: "Yonder", definition: "At some distance in the direction indicated; over there.", example: "The cabin lies just yonder, beyond those trees." },
+                { word: "Zeitgeist", definition: "The defining spirit or mood of a particular period of history.", example: "The music captured the zeitgeist of the 1960s perfectly." },
+                { word: "Aplomb", definition: "Self-confidence, especially in a demanding situation.", example: "She handled the difficult questions with remarkable aplomb." },
+                { word: "Bucolic", definition: "Relating to the pleasant aspects of the countryside and country life.", example: "The painting depicted a bucolic scene of farmers harvesting wheat." },
+                { word: "Cacophony", definition: "A harsh, discordant mixture of sounds.", example: "The cacophony of car horns during rush hour was overwhelming." },
+                { word: "Dalliance", definition: "A casual romantic or sexual relationship.", example: "Their summer dalliance ended when they both returned to college." },
+                { word: "Ebullient", definition: "Full of energy and enthusiasm.", example: "The ebullient children couldn't wait to open their presents." },
+                { word: "Fugacious", definition: "Tending to disappear; fleeting.", example: "The fugacious nature of fame became apparent to the aging actor." },
+                { word: "Gossamer", definition: "Something light, delicate, or insubstantial.", example: "The morning dew clung to gossamer spiderwebs in the grass." },
+                { word: "Hinterland", definition: "The remote areas of a country away from the coast or the banks of major rivers.", example: "The expedition aimed to explore the uncharted hinterland of the continent." },
+                { word: "Iconoclast", definition: "A person who attacks cherished beliefs or institutions.", example: "The scientist was considered an iconoclast for challenging established theories." },
+                { word: "Jocular", definition: "Fond of or characterized by joking; humorous or playful.", example: "His jocular manner made him popular at parties." },
+                { word: "Kismet", definition: "Destiny; fate.", example: "Meeting my spouse at that exact moment felt like kismet." },
+                { word: "Lissome", definition: "Thin, supple, and graceful.", example: "The lissome gymnast moved with incredible flexibility and control." },
+                { word: "Moiety", definition: "Each of two parts into which a thing is or can be divided.", example: "The inheritance was divided into equal moieties for the two siblings." },
+                { word: "Nadir", definition: "The lowest point in the fortunes of a person or organization.", example: "After losing his job and home, he felt he had reached his nadir." },
+                { word: "Oleaginous", definition: "Rich in, covered with, or producing oil; oily or greasy.", example: "The oleaginous texture of the moisturizer made it perfect for dry skin." },
+                { word: "Pyrrhic", definition: "Won at too great a cost to have been worthwhile for the victor.", example: "The legal victory was pyrrhic, as the legal fees exceeded the damages awarded." },
+                { word: "Querulous", definition: "Complaining in a petulant or whining manner.", example: "The tired child became increasingly querulous as bedtime approached." }
+            ],
+            sentences: [
+                "The golden rays of the setting sun painted the sky in hues of orange and purple, while the gentle breeze carried the scent of blooming jasmine through the open window.",
+                "As the first snowflakes began to fall, the city transformed into a silent wonderland, with every surface dusted in pristine white.",
+                "The old bookstore smelled of yellowed pages and leather bindings, each volume whispering stories of distant times and places.",
+                "Beneath the surface of the calm lake, an entire universe teemed with life, unseen by the casual observer standing on the shore.",
+                "The aroma of freshly baked bread wafted through the neighborhood, drawing people out of their homes like bees to honey.",
+                "With each step through the autumn leaves, she recalled childhood memories of jumping into piles of gold and crimson.",
+                "The concert hall fell silent as the conductor raised his baton, a collective breath held in anticipation of the first note.",
+                "Midnight in the city was never truly dark, with neon signs casting colorful reflections on rain-slicked streets.",
+                "The abandoned amusement park stood frozen in time, its rusting rides creaking in the wind like ghosts of laughter past.",
+                "Her grandmother's hands, wrinkled like the bark of an ancient tree, told stories of decades of hard work and love.",
+                "The butterfly emerged from its chrysalis, its wings still damp and folded, preparing for its first flight into the unknown.",
+                "On the highest hill, the lone oak tree stood sentinel, witnessing generations come and go beneath its spreading branches.",
+                "The first sip of coffee in the morning was a ritual, a moment of quiet before the day's chaos began.",
+                "Beneath the microscope, a drop of pond water revealed an entire ecosystem bustling with strange, alien creatures.",
+                "The lighthouse beam cut through the stormy night, a steady pulse of hope for sailors battling the raging sea.",
+                "Children's laughter echoed through the empty schoolyard, bouncing off the walls like invisible balls of joy.",
+                "The ancient map, yellowed with age, promised treasures and adventures in lands now long forgotten.",
+                "Each snowflake that landed on her mitten was a tiny masterpiece, intricate and unique, melting almost as soon as it appeared.",
+                "The old typewriter keys stuck occasionally, but the rhythm of typing still brought him back to his first days as a writer.",
+                "At the farmer's market, pyramids of colorful vegetables and baskets of fresh eggs made art of everyday sustenance.",
+                "The abandoned puppy's eyes held galaxies of hope and fear as it cautiously approached the outstretched hand.",
+                "Fog rolled in from the sea, swallowing the pier whole and leaving only the mournful cry of gulls to mark its presence.",
+                "Her collection of seashells lined the windowsill, each one a memory of a different beach, a different summer.",
+                "The mathematician's chalk danced across the blackboard, leaving behind a trail of symbols that held the secrets of the universe.",
+                "In the quiet of the library, the turning of pages sounded like the fluttering wings of a hundred butterflies.",
+                "The first bite of the ripe peach sent juice running down his chin, the taste of summer condensed into one perfect moment.",
+                "Fireflies performed their nightly ballet in the meadow, their lights flickering in patterns only they understood.",
+                "The old bridge groaned under their feet, its wooden planks worn smooth by generations of crossing feet.",
+                "Baking cookies with her granddaughter, she realized this was how traditions were born—one sweet moment at a time.",
+                "The city from the airplane window at night looked like a circuit board, with streets as traces and buildings as components.",
+                "His workshop smelled of sawdust and linseed oil, the scent of creativity and patient craftsmanship.",
+                "The abandoned nest in the bare winter tree revealed its perfect construction, a marvel of avian engineering.",
+                "Rain on the rooftop played a lullaby that had comforted her since childhood, nature's own percussion section.",
+                "The scent of the ocean hit them before they saw it, that briny, alive smell that promised adventure.",
+                "Old love letters tied with ribbon held emotions so potent they seemed to vibrate through the yellowed paper.",
+                "The mountain path wound upward through wildflowers, each switchback revealing a more breathtaking view.",
+                "In the quiet of the art museum, the paintings seemed to breathe, their colors more vibrant when no one was looking.",
+                "The first frost etched delicate patterns on the windowpane, nature's lacework celebrating winter's arrival.",
+                "Her spice rack was a world tour—cinnamon from Ceylon, saffron from Spain, peppercorns from India—each jar a story.",
+                "The old carousel's calliope music sounded ghostly in the empty amusement park, a merry tune without laughter to accompany it.",
+                "At the water's edge, the waves left behind treasures—sea glass frosted by time, shells shaped by the ocean's hands.",
+                "The barista created latte art with practiced motions, turning coffee into a canvas for fleeting beauty.",
+                "Dewdrops on the spiderweb transformed it into a necklace of diamonds in the morning light.",
+                "The abandoned factory stood like a cathedral to industry, its broken windows casting geometric shadows on the floor.",
+                "Her garden was a riot of color, with flowers elbowing each other for space and sunlight.",
+                "The old suitcase stickers told of ports and trains, adventures had and dreams yet to be realized.",
+                "In the desert at night, the stars crowded the sky, so numerous they seemed to drip down to the horizon.",
+                "The baker's hands moved with precision, folding butter into dough in a dance perfected over decades.",
+                "The quilt, made from scraps of old clothes, was a patchwork history of the family's life together.",
+                "Silence in the snow-covered woods was so complete they could hear their own heartbeats."
+            ],
+            facts: [
+                "Honey never spoils. Archaeologists have found pots of honey in ancient Egyptian tombs that are over 3,000 years old and still perfectly good to eat.",
+                "A single cloud can weigh more than 1 million pounds.",
+                "The shortest war in history was between Britain and Zanzibar on August 27, 1896. Zanzibar surrendered after 38 minutes.",
+                "Bananas are berries, but strawberries aren't.",
+                "The Eiffel Tower can be 15 cm taller during the summer due to thermal expansion of the metal.",
+                "Octopuses have three hearts, nine brains, and blue blood.",
+                "A day on Venus is longer than a year on Venus. It takes Venus 243 Earth days to rotate once, but only 225 Earth days to orbit the sun.",
+                "The inventor of the Frisbee was turned into a Frisbee after he died - his ashes were molded into memorial Frisbees.",
+                "Cleopatra lived closer in time to the moon landing than to the construction of the Great Pyramid of Giza.",
+                "There's a species of jellyfish that is biologically immortal. Turritopsis dohrnii can revert back to its juvenile form after reaching maturity.",
+                "A group of flamingos is called a 'flamboyance.'",
+                "The smell of rain is called 'petrichor.'",
+                "The total weight of all the ants on Earth is about the same as the total weight of all the humans.",
+                "A bolt of lightning is five times hotter than the surface of the sun.",
+                "The world's oldest known living tree is a 4,853-year-old Great Basin bristlecone pine in California.",
+                "The dot over the letter 'i' is called a tittle.",
+                "Wombat poop is cube-shaped to prevent it from rolling away.",
+                "The first oranges weren't orange - they were green.",
+                "The longest time between two twins being born is 87 days.",
+                "A shrimp's heart is in its head.",
+                "The unicorn is the national animal of Scotland.",
+                "The first computer mouse was made of wood.",
+                "The first product to have a barcode was Wrigley's gum in 1974.",
+                "The '@' symbol has been around since at least the 16th century.",
+                "The first recorded game of baseball was played in 1846 in Hoboken, New Jersey.",
+                "The first alarm clock could only ring at 4 a.m.",
+                "The first email was sent in 1971 by Ray Tomlinson to himself.",
+                "The first website is still online: http://info.cern.ch",
+                "The first YouTube video was uploaded on April 23, 2005, and was titled 'Me at the zoo.'",
+                "The first text message was sent in 1992 and read 'Merry Christmas.'",
+                "The first iPhone didn't have copy and paste functionality.",
+                "The first camera took eight hours to take a single photograph.",
+                "The first photograph of a person was taken in 1838 in Paris.",
+                "The first movie ever made was only 2 seconds long.",
+                "The first feature-length animated film was made in Argentina in 1917.",
+                "The first novel written on a typewriter was 'Tom Sawyer.'",
+                "The first product sold on Amazon was a book.",
+                "The first tweet was sent on March 21, 2006, by Jack Dorsey: 'just setting up my twttr'",
+                "The first video uploaded to TikTok was of someone lip-syncing to a song by Kesha.",
+                "The first Instagram photo was uploaded on July 16, 2010, by Kevin Systrom.",
+                "The first message sent over the ARPANET (precursor to the internet) was 'LO' - it was supposed to be 'LOGIN' but the system crashed.",
+                "The first webcam was invented to watch a coffee pot.",
+                "The first computer bug was an actual bug - a moth found trapped in a Harvard Mark II computer in 1947.",
+                "The first 1GB hard drive weighed 550 pounds and cost $40,000.",
+                "The first computer password was used at MIT in the 1960s.",
+                "The first domain name ever registered was Symbolics.com on March 15, 1985.",
+                "The first spam email was sent in 1978 to 600 people.",
+                "The first emoticon was suggested in 1982 by Scott Fahlman: :-)",
+                "The first Google storage was made from LEGO.",
+                "The first YouTube video to reach 1 billion views was 'Gangnam Style' in 2012."
+            ],
+            // Single news link that you can easily replace
+            newsLink: "https://notascammer1123.github.io/shane.fun/AmazingButTrue.html" 
+        };
+
+        // Display current date and day counter
+        function updateDate() {
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', options);
+            
+            // Calculate day of year (1-365)
+            const start = new Date(now.getFullYear(), 0, 0);
+            const diff = now - start;
+            const oneDay = 1000 * 60 * 60 * 24;
+            const dayOfYear = Math.floor(diff / oneDay);
+            
+            document.getElementById('day-counter').textContent = `Day ${dayOfYear} of ${now.getFullYear()}`;
+            
+            // Return day index (0-49) for content rotation
+            return (dayOfYear - 1) % 50;
+        }
+
+        // Display functions for each category
+        function showWordOfTheDay() {
+            const dayIndex = updateDate();
+            const display = document.getElementById('display-area');
+            display.innerHTML = `
+                <div class="word">${dailyContent.words[dayIndex].word}</div>
+                <div class="definition"><strong>Definition:</strong> ${dailyContent.words[dayIndex].definition}</div>
+                <div class="example"><strong>Example:</strong> ${dailyContent.words[dayIndex].example}</div>
+            `;
+        }
+
+        function showSentenceOfTheDay() {
+            const dayIndex = updateDate();
+            const display = document.getElementById('display-area');
+            display.innerHTML = `
+                <div class="sentence">"${dailyContent.sentences[dayIndex]}"</div>
+            `;
+        }
+
+        function showImageOfTheDay() {
+            const dayIndex = updateDate();
+            const display = document.getElementById('display-area');
+            // Using Picsum Photos with seed based on day index
+            const imageUrl = `https://picsum.photos/seed/day${dayIndex}/600/400`;
+            display.innerHTML = `
+                <div class="image-container">
+                    <img src="${imageUrl}" alt="Image of the Day">
+                    <p>Today's featured image</p>
+                </div>
+            `;
+        }
+
+        function showFactOfTheDay() {
+            const dayIndex = updateDate();
+            const display = document.getElementById('display-area');
+            display.innerHTML = `
+                <div class="fact">${dailyContent.facts[dayIndex]}</div>
+            `;
+        }
+
+        function showNewsOfTheDay() {
+            updateDate(); // Still update the date display
+            const display = document.getElementById('display-area');
+            display.innerHTML = `
+                <p>Today's featured news story</p>
+                <a href="${dailyContent.newsLink}" class="news-link" target="_blank">Read Today's News</a>
+            `;
+        }
+
+        // Initialize with current date
+        updateDate();
+    </script>
+</body>
+</html>
