@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" href="https://cdn-icons-png.flaticon.com/512/5708/5708154.png" type="image/png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infinite Scroller</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #111;
+            cursor: none;
+            font-family: Comic Sans MS, serif;
+        }
+        
+        #game {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        .item {
+            position: absolute;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.3s ease;
+        }
+        
+        .text {
+            position: absolute;
+            color: white;
+            font-size: 24px;
+            text-shadow: 0 0 5px #fff;
+            transform: translate(-50%, -50%);
+            white-space: nowrap;
+        }
+        
+        .cursor {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            mix-blend-mode: difference;
+            z-index: 1000;
+        }
+        
+        .cursor-follower {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            transition: transform 0.2s ease;
+            z-index: 999;
+        }
+        
+        .pattern {
+            position: absolute;
+            opacity: 0.2;
+            pointer-events: none;
+        }
+        
+        #score-display {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: white;
+            font-size: 24px;
+            z-index: 1001;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        #time-display {
+            position: fixed;
+            top: 60px;
+            left: 20px;
+            color: white;
+            font-size: 18px;
+            z-index: 1001;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        .score-popup {
+            position: absolute;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            animation: floatUp 1s forwards;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        
+        @keyframes floatUp {
+            0% {
+                transform: translate(-50%, -50%);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -150%);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="game"></div>
+    <div id="score-display">Score: 0</div>
+    <div id="time-display">Time: 0s</div>
+    <div class="cursor"></div>
+    <div class="cursor-follower"></div>
+    
+    <script>
+        const game = document.getElementById('game');
+        const cursor = document.querySelector('.cursor');
+        const cursorFollower = document.querySelector('.cursor-follower');
+        const scoreDisplay = document.getElementById('score-display');
+        const timeDisplay = document.getElementById('time-display');
+        
+        // Game state
+        const state = {
+            scrollSpeed: 2,
+            lastItemTime: 0,
+            itemInterval: 300,
+            lastTextTime: 0,
+            textInterval: 2000,
+            lastPatternTime: 0,
+            patternInterval: 5000,
+            score: 0,
+            timeScore: 0,
+            startTime: Date.now(),
+            items: [],
+            texts: [],
+            patterns: []
+        };
+        
+        // Update time and score every second
+        setInterval(() => {
+            const seconds = Math.floor((Date.now() - state.startTime) / 1000);
+            timeDisplay.textContent = `Time: ${seconds}s`;
+            
+            // Add to score based on time (1 point per second)
+            state.timeScore = seconds;
+            updateScoreDisplay();
+        }, 1000);
+        
+        function updateScoreDisplay() {
+            const totalScore = state.score + state.timeScore;
+            scoreDisplay.textContent = `Score: ${totalScore}`;
+            
+            // Change color based on score
+            const hue = (totalScore * 5) % 360;
+            scoreDisplay.style.color = `hsl(${hue}, 100%, 70%)`;
+            timeDisplay.style.color = `hsl(${hue}, 80%, 60%)`;
+        }
+        
+        function createScorePopup(x, y, points) {
+            const popup = document.createElement('div');
+            popup.className = 'score-popup';
+            popup.textContent = `+${points}`;
+            popup.style.left = x + 'px';
+            popup.style.top = y + 'px';
+            
+            // Random color for the popup
+            popup.style.color = getRandomColor(1);
+            
+            game.appendChild(popup);
+            
+            // Remove after animation
+            setTimeout(() => {
+                game.removeChild(popup);
+            }, 1000);
+        }
+        
+        // Cursor effects
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+            
+            setTimeout(() => {
+                cursorFollower.style.left = e.clientX + 'px';
+                cursorFollower.style.top = e.clientY + 'px';
+            }, 100);
+            
+            // Random cursor color change sometimes
+            if (Math.random() > 0.95) {
+                cursor.style.backgroundColor = getRandomColor(0.7);
+            }
+        });
+        
+        document.addEventListener('click', (event) => {
+            // Cursor pulse effect on click
+            cursor.style.transform = 'translate(-50%, -50%) scale(1.5)';
+            cursor.style.opacity = '0.8';
+            setTimeout(() => {
+                cursor.style.transform = 'translate(-50%, -50%) scale(1)';
+                cursor.style.opacity = '0.5';
+            }, 200);
+            
+            // Add some points for clicking anywhere
+            const clickPoints = 1;
+            state.score += clickPoints;
+            updateScoreDisplay();
+            createScorePopup(event.clientX, event.clientY, clickPoints);
+            
+            // Check if clicked an item
+            state.items.forEach((item, index) => {
+                const rect = item.element.getBoundingClientRect();
+                const distance = Math.sqrt(
+                    Math.pow(event.clientX - (rect.left + rect.width/2), 2) + 
+                    Math.pow(event.clientY - (rect.top + rect.height/2), 2)
+                );
+                
+                if (distance < rect.width/2) {
+                    // Item clicked!
+                    const itemPoints = Math.max(1, Math.floor(item.size / 10));
+                    state.score += itemPoints;
+                    updateScoreDisplay();
+                    createScorePopup(item.x, item.y, itemPoints);
+                    
+                    item.element.style.transform = 'translate(-50%, -50%) scale(2)';
+                    item.element.style.opacity = '0';
+                    setTimeout(() => {
+                        game.removeChild(item.element);
+                    }, 300);
+                    state.items.splice(index, 1);
+                    
+                    // Create explosion effect
+                    createExplosion(item.x, item.y, item.color);
+                }
+            });
+        });
+        
+        // Game loop
+        function gameLoop(timestamp) {
+            // Create random items
+            if (timestamp - state.lastItemTime > state.itemInterval) {
+                createRandomItem();
+                state.lastItemTime = timestamp;
+                // Gradually increase difficulty
+                state.itemInterval = Math.max(100, 500 - (state.score + state.timeScore) * 0.1);
+            }
+            
+            // Create random floating texts
+            if (timestamp - state.lastTextTime > state.textInterval) {
+                createRandomText();
+                state.lastTextTime = timestamp;
+            }
+            
+            // Create random patterns
+            if (timestamp - state.lastPatternTime > state.patternInterval) {
+                createRandomPattern();
+                state.lastPatternTime = timestamp;
+            }
+            
+            // Move all items
+            state.items.forEach(item => {
+                item.y += state.scrollSpeed;
+                item.element.style.top = item.y + 'px';
+                
+                // Remove if off screen
+                if (item.y > window.innerHeight + 100) {
+                    game.removeChild(item.element);
+                    state.items.splice(state.items.indexOf(item), 1);
+                }
+            });
+            
+            // Move all texts
+            state.texts.forEach(text => {
+                text.y += state.scrollSpeed * 0.5;
+                text.element.style.top = text.y + 'px';
+                
+                // Fade out
+                const opacity = parseFloat(text.element.style.opacity || 1);
+                text.element.style.opacity = opacity - 0.01;
+                
+                // Remove if off screen or faded
+                if (text.y > window.innerHeight + 50 || opacity <= 0) {
+                    game.removeChild(text.element);
+                    state.texts.splice(state.texts.indexOf(text), 1);
+                }
+            });
+            
+            // Animate patterns
+            state.patterns.forEach(pattern => {
+                pattern.rotation += pattern.rotationSpeed;
+                pattern.element.style.transform = `rotate(${pattern.rotation}deg)`;
+                
+                // Remove after some time
+                if (timestamp - pattern.createdAt > 10000) {
+                    game.removeChild(pattern.element);
+                    state.patterns.splice(state.patterns.indexOf(pattern), 1);
+                }
+            });
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Helper functions
+        function createRandomItem() {
+            const size = Math.random() * 50 + 20;
+            const x = Math.random() * window.innerWidth;
+            const y = -50;
+            const color = getRandomColor(0.7);
+            
+            const item = document.createElement('div');
+            item.className = 'item';
+            item.style.width = size + 'px';
+            item.style.height = size + 'px';
+            item.style.left = x + 'px';
+            item.style.top = y + 'px';
+            item.style.backgroundColor = color;
+            
+            // Random shape sometimes
+            if (Math.random() > 0.7) {
+                item.style.borderRadius = '0';
+                if (Math.random() > 0.5) {
+                    item.style.transform = 'translate(-50%, -50%) rotate(45deg)';
+                }
+            }
+            
+            game.appendChild(item);
+            
+            state.items.push({
+                element: item,
+                x, y, color,
+                size
+            });
+        }
+        
+        function createRandomText() {
+            const texts = [
+                "INFINITE", "SCROLL", "GAME", "FUN", "WOW", "COOL",
+                "CLICK ME", "CATCH", "SCORE", "PLAY", "NICE", "EPIC"
+            ];
+            const text = texts[Math.floor(Math.random() * texts.length)];
+            const x = Math.random() * window.innerWidth;
+            const y = -30;
+            const color = getRandomColor(0.9);
+            
+            const textElement = document.createElement('div');
+            textElement.className = 'text';
+            textElement.textContent = text;
+            textElement.style.left = x + 'px';
+            textElement.style.top = y + 'px';
+            textElement.style.color = color;
+            
+            game.appendChild(textElement);
+            
+            state.texts.push({
+                element: textElement,
+                x, y
+            });
+        }
+        
+        function createRandomPattern() {
+            const pattern = document.createElement('div');
+            pattern.className = 'pattern';
+            
+            const size = Math.random() * 300 + 100;
+            const x = Math.random() * window.innerWidth;
+            const y = Math.random() * window.innerHeight;
+            const color = getRandomColor(0.1);
+            
+            pattern.style.width = size + 'px';
+            pattern.style.height = size + 'px';
+            pattern.style.left = x + 'px';
+            pattern.style.top = y + 'px';
+            pattern.style.backgroundColor = color;
+            
+            // Random pattern type
+            if (Math.random() > 0.5) {
+                pattern.style.borderRadius = '50%';
+                pattern.style.boxShadow = `0 0 ${size/2}px ${size/4}px ${getRandomColor(0.05)}`;
+            } else {
+                pattern.style.border = `${size/20}px dashed ${getRandomColor(0.05)}`;
+            }
+            
+            game.appendChild(pattern);
+            
+            state.patterns.push({
+                element: pattern,
+                rotation: 0,
+                rotationSpeed: (Math.random() - 0.5) * 2,
+                createdAt: performance.now()
+            });
+        }
+        
+        function createExplosion(x, y, color) {
+            for (let i = 0; i < 10; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'item';
+                const size = Math.random() * 10 + 5;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                particle.style.backgroundColor = color;
+                
+                // Random direction
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 5 + 2;
+                const vx = Math.cos(angle) * speed;
+                const vy = Math.sin(angle) * speed;
+                
+                game.appendChild(particle);
+                
+                let life = 0;
+                const animateParticle = () => {
+                    life++;
+                    x += vx;
+                    y += vy;
+                    particle.style.left = x + 'px';
+                    particle.style.top = y + 'px';
+                    particle.style.opacity = 1 - life/30;
+                    
+                    if (life < 30) {
+                        requestAnimationFrame(animateParticle);
+                    } else {
+                        game.removeChild(particle);
+                    }
+                };
+                
+                animateParticle();
+            }
+        }
+        
+        function getRandomColor(alpha) {
+            return `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${alpha})`;
+        }
+        
+        // Start game
+        requestAnimationFrame(gameLoop);
+        
+        // Initial items
+        for (let i = 0; i < 10; i++) {
+            setTimeout(() => {
+                createRandomItem();
+                if (i % 3 === 0) createRandomText();
+                if (i === 5) createRandomPattern();
+            }, i * 300);
+        }
+    </script>
+</body>
+</html>
