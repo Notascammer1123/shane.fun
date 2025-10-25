@@ -1,50 +1,358 @@
-Deep Sea
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<link rel="icon" href="https://hotemoji.com/images/dl/l/crocodile-emoji-by-twitter.pngcomp.png" type="image/png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Deep Sea Explorer</title>
+    <link rel="icon" href="https://hotemoji.com/images/dl/l/crocodile-emoji-by-twitter.pngcomp.png" type="image/png">
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; background-color: #001f3f; color: white; overflow-y: scroll; height: 12000px; }
-        .ocean { position: relative; width: 100vw; height: 12000px; }
-        .submarine { position: fixed; left: 50%; top: 10%; transform: translateX(-50%); font-size: 50px; }
-        .depth { position: fixed; top: 10px; left: 10px; font-size: 20px; }
-        .creature { position: absolute; font-size: 30px; text-align: left; width: 300px; }
-        .rock { position: absolute; font-size: 25px; color: gray; }
-        .go-top { position: fixed; bottom: 20px; right: 20px; padding: 10px 20px; background: #ffcc00; color: black; border: none; cursor: pointer; font-size: 16px; border-radius: 5px; }
+        :root {
+            --surface-blue: #006994;
+            --twilight-blue: #004466;
+            --midnight-blue: #002233;
+            --abyssal-blue: #000c17;
+            --trench-black: #000000;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to bottom, var(--surface-blue), var(--twilight-blue), var(--midnight-blue), var(--abyssal-blue), var(--trench-black));
+            color: white;
+            overflow-x: hidden;
+            height: 15000px;
+        }
+        
+        .ocean {
+            position: relative;
+            width: 100%;
+            height: 15000px;
+        }
+        
+        .submarine {
+            position: fixed;
+            left: 50%;
+            top: 15%;
+            transform: translateX(-50%);
+            font-size: 50px;
+            z-index: 100;
+            transition: transform 0.3s ease;
+        }
+        
+        .depth-meter {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 15px;
+            border-radius: 10px;
+            z-index: 100;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+        
+        .depth-zone {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            font-size: 28px;
+            font-weight: bold;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .creature {
+            position: absolute;
+            font-size: 40px;
+            width: 350px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 15px;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .creature:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.7);
+            z-index: 10;
+        }
+        
+        .creature-name {
+            font-weight: bold;
+            font-size: 22px;
+            margin-bottom: 5px;
+        }
+        
+        .creature-desc {
+            font-size: 16px;
+            font-style: italic;
+            color: #aaddff;
+        }
+        
+        .rock {
+            position: absolute;
+            font-size: 25px;
+            color: #555;
+            z-index: 1;
+        }
+        
+        .bubble {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            animation: floatUp 15s infinite linear;
+        }
+        
+        .go-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 12px 20px;
+            background: #ffcc00;
+            color: black;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            box-shadow: 0 0 15px rgba(255, 204, 0, 0.7);
+            z-index: 100;
+            transition: transform 0.3s ease;
+        }
+        
+        .go-top:hover {
+            transform: scale(1.1);
+        }
+        
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 5px;
+            background: linear-gradient(to right, #00aaff, #00ffaa);
+            z-index: 100;
+            transition: width 0.1s ease;
+        }
+        
+        .light-beam {
+            position: fixed;
+            top: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 1000px;
+            background: linear-gradient(to bottom, rgba(255, 255, 200, 0.1), transparent);
+            clip-path: polygon(45% 0, 55% 0, 100% 100%, 0% 100%);
+            pointer-events: none;
+            z-index: 5;
+        }
+        
+        @keyframes floatUp {
+            0% {
+                transform: translateY(0) translateX(0);
+                opacity: 0.7;
+            }
+            100% {
+                transform: translateY(-1000px) translateX(20px);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes swim {
+            0% {
+                transform: translateX(0) translateY(0);
+            }
+            50% {
+                transform: translateX(10px) translateY(5px);
+            }
+            100% {
+                transform: translateX(0) translateY(0);
+            }
+        }
+        
+        .swimming {
+            animation: swim 5s infinite ease-in-out;
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="depth">Depth: <span id="depth">0</span>m</div>
+    <div class="progress-bar" id="progressBar"></div>
+    <div class="depth-meter">Depth: <span id="depth">0</span>m</div>
+    <div class="light-beam"></div>
+    
     <div class="ocean" id="ocean">
         <div class="submarine" id="submarine">🚢</div>
         
+        <!-- Depth Zones -->
+        <div class="depth-zone" style="top: 0;">Sunlight Zone (0-200m)</div>
+        <div class="depth-zone" style="top: 2000px;">Twilight Zone (200-1000m)</div>
+        <div class="depth-zone" style="top: 5000px;">Midnight Zone (1000-4000m)</div>
+        <div class="depth-zone" style="top: 9000px;">Abyssal Zone (4000-6000m)</div>
+        <div class="depth-zone" style="top: 12000px;">Hadal Zone (6000-11000m)</div>
+        
         <!-- Ocean Creatures in ascending order by depth -->
-        <div class="creature" style="top: 550px; left: 40%;">🐡 Pufferfish - 300m<br>"Inflates when startled. Wish my bank account did the same."</div>
-        <div class="creature" style="top: 800px; left: 60%;">🐟 Tuna - 400m<br>"The ocean's speedster. Can outrun your WiFi signal."</div>
-        <div class="creature" style="top: 1699px; left: 30%">🦞 Lobster - 900m<br>"Technically immortal. Too bad it tastes too good to find out."</div>
-        <div class="creature" style="top: 1900px; left: 50%">🦑 Squid - 1000m<br>"A master of disguise. Probably a secret agent."</div>
-        <div class="creature" style="top: 2150px; left: 70%">🐊 Crocodile Icefish - 1200m<br>"Lives in freezing waters. Probably the chillest dude down here."</div>
-        <div class="creature" style="top: 2900px; left: 40%">🐠 Anglerfish - 1600m<br>"Carries its own headlamp. Saves a fortune on electricity."</div>
-        <div class="creature" style="top: 3800px; left: 50%">🐙 Octopus - 2000m<br>"Eight arms, zero problems. Can multitask better than you."</div>
-        <div class="creature" style="top: 4000px; left: 30%">🐋 Sperm Whale - 2200m<br>"Can hold its breath for 90 minutes. Bet you can't."</div>
-        <div class="creature" style="top: 4530px; left: 70%">🦀 Giant Isopod - 2500m<br>"Basically an underwater cockroach. Nightmares are real."</div>
-        <div class="creature" style="top: 6705px; left: 50%">🦈 Shark - 3700m<br>"Has been around longer than trees. Basically an ancient warrior."</div>
+        <div class="creature swimming" style="top: 300px; left: 20%;">
+            <div class="creature-name">🐬 Dolphin</div>
+            <div class="creature-desc">"The ocean's acrobat. Probably knows more jokes than you."</div>
+        </div>
         
-        <!-- Tiny Deep-Sea Creatures -->
-        <div class="creature" style="top: 7300px; left: 40%">🦠 Nanoarchaeum equitans - 4000m<br>"So tiny it lives on another microbe. The ultimate hitchhiker."</div>
-        <div class="creature" style="top: 7990px; left: 60%">🐚 Halystina globulus - 4500m<br>"A snail so small, it makes ants look big."</div>
-        <div class="creature" style="top: 9000px; left: 30%">🦠 Deep-Sea Plankton - 5000m<br>"Drifts around aimlessly. Basically the ocean's version of a couch potato."</div>
+        <div class="creature swimming" style="top: 550px; left: 40%;">
+            <div class="creature-name">🐡 Pufferfish</div>
+            <div class="creature-desc">"Inflates when startled. Wish my bank account did the same."</div>
+        </div>
         
-        <!-- Mariana Trench -->
-        <div class="creature" style="top: 20000px; left: 50%">🌊 Mariana Trench - 11000m<br>"Wow, you reached the end! Time to head back up!"</div>
+        <div class="creature swimming" style="top: 800px; left: 60%;">
+            <div class="creature-name">🐟 Tuna</div>
+            <div class="creature-desc">"The ocean's speedster. Can outrun your WiFi signal."</div>
+        </div>
+        
+        <div class="creature swimming" style="top: 1200px; left: 30%;">
+            <div class="creature-name">🦐 Shrimp</div>
+            <div class="creature-desc">"Tiny but mighty. The ocean's popcorn."</div>
+        </div>
+        
+        <div class="creature swimming" style="top: 1699px; left: 30%">
+            <div class="creature-name">🦞 Lobster</div>
+            <div class="creature-desc">"Technically immortal. Too bad it tastes too good to find out."</div>
+        </div>
+        
+        <div class="creature swimming" style="top: 1900px; left: 50%">
+            <div class="creature-name">🦑 Squid</div>
+            <div class="creature-desc">"A master of disguise. Probably a secret agent."</div>
+        </div>
+        
+        <div class="creature swimming" style="top: 2150px; left: 70%">
+            <div class="creature-name">🐊 Crocodile Icefish</div>
+            <div class="creature-desc">"Lives in freezing waters. Probably the chillest dude down here."</div>
+        </div>
+        
+        <div class="creature swimming" style="top: 2500px; left: 20%">
+            <div class="creature-name">🔮 Glass Squid</div>
+            <div class="creature-desc">"Transparent and mysterious. The ocean's invisible man."</div>
+        </div>
+        
+        <div class="creature swimming" style="top: 2900px; left: 40%">
+            <div class="creature-name">🐠 Anglerfish</div>
+            <div class="creature-desc">"Carries its own headlamp. Saves a fortune on electricity."</div>
+        </div>
+        
+        <div class="creature swimming" style="top: 3300px; left: 60%">
+            <div class="creature-name">👻 Ghost Shark</div>
+            <div class="creature-desc">"Not a shark, not a ghost. The ocean's identity crisis."</div>
+        </div>
+        
+        <div class="creature swimming" style="top: 3800px; left: 50%">
+            <div class="creature-name">🐙 Octopus</div>
+            <div class="creature-desc">"Eight arms, zero problems. Can multitask better than you."</div>
+        </div>
+        
+        <div class="creature swimming" style="top: 4000px; left: 30%">
+            <div class="creature-name">🐋 Sperm Whale</div>
+            <div class="creature-desc">"Can hold its breath for 90 minutes. Bet you can't."</div>
+        </div>
+        
+        <div class="creature swimming" style="top: 4530px; left: 70%">
+            <div class="creature-name">🦀 Giant Isopod</div>
+            <div class="creature-desc">"Basically an underwater cockroach. Nightmares are real."</div>
+        </div>
+        
+        <div class="creature swimming" style="top: 5000px; left: 40%">
+            <div class="creature-name">🧜 Vampire Squid</div>
+            <div class="creature-desc">"Lives in oxygen minimum zones. The ocean's goth phase."</div>
+        </div>
+        
+        <div class="creature swimming" style="top: 5500px; left: 60%">
+            <div class="creature-name">🕷️ Sea Spider</div>
+            <div class="creature-desc">"Legs for days. The ocean's supermodel."</div>
+        </div>
+        
+        <div class="creature swimming" style="top: 6000px; left: 30%">
+            <div class="creature-name">🎯 Hatchetfish</div>
+            <div class="creature-desc">"Thin and silvery. The ocean's throwing weapon."</div>
+        </div>
+        
+        <div class="creature swimming" style="top: 6705px; left: 50%">
+            <div class="creature-name">🦈 Shark</div>
+            <div class="creature-desc">"Has been around longer than trees. Basically an ancient warrior."</div>
+        </div>
+        
+        <div class="creature swimming" style="top: 7300px; left: 40%">
+            <div class="creature-name">🦠 Nanoarchaeum equitans</div>
+            <div class="creature-desc">"So tiny it lives on another microbe. The ultimate hitchhiker."</div>
+        </div>
+        
+        <div class="creature swimming" style="top: 7990px; left: 60%">
+            <div class="creature-name">🐚 Halystina globulus</div>
+            <div class="creature-desc">"A snail so small, it makes ants look big."</div>
+        </div>
+        
+        <div class="creature swimming" style="top: 8500px; left: 20%">
+            <div class="creature-name">🪱 Giant Tube Worm</div>
+            <div class="creature-desc">"Lives near hydrothermal vents. The ocean's hot tub enthusiast."</div>
+        </div>
+        
+        <div class="creature swimming" style="top: 9000px; left: 30%">
+            <div class="creature-name">🦠 Deep-Sea Plankton</div>
+            <div class="creature-desc">"Drifts around aimlessly. Basically the ocean's version of a couch potato."</div>
+        </div>
+        
+        <div class="creature swimming" style="top: 9500px; left: 70%">
+            <div class="creature-name">🦐 Yeti Crab</div>
+            <div class="creature-desc">"Hairy claws that farm bacteria. The ocean's hipster farmer."</div>
+        </div>
+        
+        <div class="creature swimming" style="top: 10000px; left: 50%">
+            <div class="creature-name">🐠 Snailfish</div>
+            <div class="creature-desc">"The deepest living fish. Has seen things we can't imagine."</div>
+        </div>
+        
+        <div class="creature swimming" style="top: 10500px; left: 40%">
+            <div class="creature-name">🦠 Xenophyophore</div>
+            <div class="creature-desc">"Single-celled organisms the size of your fist. The ocean's gentle giant."</div>
+        </div>
+        
+        <div class="creature swimming" style="top: 11000px; left: 60%">
+            <div class="creature-name">🦠 Barophilic Bacteria</div>
+            <div class="creature-desc">"Thrives under extreme pressure. The ocean's pressure cooker."</div>
+        </div>
+        
+        <div class="creature pulse" style="top: 12000px; left: 50%; text-align: center; width: 500px;">
+            <div class="creature-name">🌊 Mariana Trench</div>
+            <div class="creature-desc">"Wow, you reached the deepest point on Earth! Time to head back up!"</div>
+        </div>
         
         <!-- Rocks and Barnacles (Continuous) -->
         <script>
             let ocean = document.getElementById("ocean");
-            for (let i = 400; i < 12000; i += 500) {
+            for (let i = 400; i < 15000; i += 500) {
                 let rockLeft = document.createElement("div");
                 rockLeft.className = "rock";
                 rockLeft.innerText = "🪨";
@@ -68,17 +376,63 @@ Deep Sea
                     ocean.appendChild(barnacle);
                 }
             }
+            
+            // Add bubbles
+            for (let i = 0; i < 100; i++) {
+                let bubble = document.createElement("div");
+                bubble.className = "bubble";
+                bubble.style.left = `${Math.random() * 100}%`;
+                bubble.style.top = `${Math.random() * 15000}px`;
+                bubble.style.animationDelay = `${Math.random() * 15}s`;
+                bubble.style.width = `${5 + Math.random() * 15}px`;
+                bubble.style.height = bubble.style.width;
+                ocean.appendChild(bubble);
+            }
         </script>
     </div>
     
-    <button class="go-top" onclick="window.scrollTo({ top: 0, behavior: 'smooth' });">Go to Top</button>
+    <button class="go-top" onclick="window.scrollTo({ top: 0, behavior: 'smooth' });">↑</button>
     
     <script>
         let depthDisplay = document.getElementById("depth");
+        let progressBar = document.getElementById("progressBar");
+        let submarine = document.getElementById("submarine");
+        let maxDepth = 11000; // Mariana Trench depth in meters
 
         window.addEventListener("scroll", function() {
-            let depth = Math.floor(window.scrollY / 1.8);
+            let depth = Math.floor(window.scrollY / 1.36); // Adjusted for new page height
             depthDisplay.innerText = depth + "m";
+            
+            // Update progress bar
+            let scrollPercentage = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
+            progressBar.style.width = scrollPercentage + "%";
+            
+            // Make submarine move slightly with scroll
+            submarine.style.transform = `translateX(-50%) translateY(${window.scrollY * 0.01}px)`;
+            
+            // Change submarine appearance at different depths
+            if (depth > 1000) {
+                submarine.innerText = "🛸"; // Change to UFO-like sub for deep sea
+            } else {
+                submarine.innerText = "🚢";
+            }
+            
+            // Add glowing effect at extreme depths
+            if (depth > 8000) {
+                submarine.classList.add('pulse');
+            } else {
+                submarine.classList.remove('pulse');
+            }
+        });
+        
+        // Add click effects to creatures
+        document.querySelectorAll('.creature').forEach(creature => {
+            creature.addEventListener('click', function() {
+                this.style.boxShadow = '0 0 25px rgba(255, 255, 0, 0.8)';
+                setTimeout(() => {
+                    this.style.boxShadow = '0 0 15px rgba(0, 255, 255, 0.3)';
+                }, 500);
+            });
         });
     </script>
 </body>

@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cursor Stamina Challenge</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🖱️</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+            user-select: none;
+            cursor: default;
+        }
+        
+        #gameContainer {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #staminaContainer {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            z-index: 20;
+            background: rgba(30, 30, 46, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            border: 1px solid #394867;
+            backdrop-filter: blur(5px);
+        }
+        
+        #staminaLabel {
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 1rem;
+            color: #a9b7d0;
+        }
+        
+        #staminaBar {
+            width: 100%;
+            height: 20px;
+            background: rgba(57, 72, 103, 0.7);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        #stamina {
+            height: 100%;
+            background: linear-gradient(to right, #00b09b, #96c93d);
+            width: 100%;
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+        
+        #staminaLow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, #ff416c, #ff4b2b);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            border-radius: 10px;
+        }
+        
+        #scoreContainer {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(30, 30, 46, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            border: 1px solid #394867;
+            backdrop-filter: blur(5px);
+            text-align: center;
+        }
+        
+        #scoreLabel {
+            font-size: 0.9rem;
+            color: #a9b7d0;
+            margin-bottom: 5px;
+        }
+        
+        #score {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #f8b500;
+        }
+        
+        #targetContainer {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .target {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, #ff416c, #ff4b2b);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 0 20px rgba(255, 65, 108, 0.7);
+            animation: pulse 1.5s infinite;
+            cursor: pointer;
+            pointer-events: auto;
+            transition: transform 0.2s;
+        }
+        
+        .target:hover {
+            transform: scale(1.1);
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 20px rgba(255, 65, 108, 0.7); }
+            50% { transform: scale(1.05); box-shadow: 0 0 30px rgba(255, 65, 108, 0.9); }
+            100% { transform: scale(1); box-shadow: 0 0 20px rgba(255, 65, 108, 0.7); }
+        }
+        
+        #warningText {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #ff4b2b;
+            text-align: center;
+            display: none;
+            z-index: 100;
+            text-shadow: 0 0 10px rgba(255, 75, 43, 0.7);
+            animation: shake 0.5s infinite;
+        }
+        
+        @keyframes shake {
+            0% { transform: translate(-50%, -50%) translateX(0); }
+            25% { transform: translate(-50%, -50%) translateX(-5px); }
+            50% { transform: translate(-50%, -50%) translateX(5px); }
+            75% { transform: translate(-50%, -50%) translateX(-5px); }
+            100% { transform: translate(-50%, -50%) translateX(0); }
+        }
+        
+        #introScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        #introTitle {
+            font-size: 3rem;
+            color: #f8b500;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        #introText {
+            font-size: 1.3rem;
+            max-width: 600px;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        #startButton {
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            background: linear-gradient(to right, #00b09b, #96c93d);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        #startButton:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+        }
+        
+        #gameOverScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        #gameOverTitle {
+            font-size: 2.5rem;
+            color: #ff4b2b;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        #finalScore {
+            font-size: 2rem;
+            color: #f8b500;
+            margin-bottom: 20px;
+        }
+        
+        #restartButton {
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            background: linear-gradient(to right, #394867, #283655);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        #restartButton:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+        }
+        
+        #timerContainer {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(30, 30, 46, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            border: 1px solid #394867;
+            backdrop-filter: blur(5px);
+            text-align: center;
+        }
+        
+        #timerLabel {
+            font-size: 0.9rem;
+            color: #a9b7d0;
+            margin-bottom: 5px;
+        }
+        
+        #timer {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00b09b;
+        }
+        
+        #instructions {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(30, 30, 46, 0.7);
+            padding: 10px 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #a9b7d0;
+            max-width: 500px;
+        }
+        
+        /* Remove cursor trail elements */
+        #cursorTrail, .cursor-trail {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="introScreen">
+            <h1 id="introTitle">Cursor Stamina Challenge</h1>
+            <p id="introText">Your cursor has limited energy! Move it to click the targets before your stamina runs out. Be strategic - rapid movement drains energy faster. When stamina is depleted, you can't move your cursor!</p>
+            <button id="startButton">Start Challenge</button>
+        </div>
+        
+        <div id="staminaContainer">
+            <div id="staminaLabel">Cursor Stamina</div>
+            <div id="staminaBar">
+                <div id="stamina"></div>
+                <div id="staminaLow"></div>
+            </div>
+        </div>
+        
+        <div id="scoreContainer">
+            <div id="scoreLabel">Score</div>
+            <div id="score">0</div>
+        </div>
+        
+        <div id="timerContainer">
+            <div id="timerLabel">Time</div>
+            <div id="timer">60</div>
+        </div>
+        
+        <div id="targetContainer"></div>
+        
+        <div id="warningText">OUT OF STAMINA!</div>
+        
+        <div id="gameOverScreen">
+            <h1 id="gameOverTitle">Game Over</h1>
+            <div id="finalScore">Score: 0</div>
+            <button id="restartButton">Play Again</button>
+        </div>
+        
+        <div id="instructions">Click the red targets before time runs out. Manage your cursor stamina carefully!</div>
+    </div>
+
+    <script>
+        // Game state variables
+        let stamina = 100;
+        let isResting = false;
+        let score = 0;
+        let timeLeft = 60;
+        let gameActive = false;
+        let gameTimer;
+        let regenInterval;
+        let targets = [];
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+        
+        // DOM elements
+        const staminaBar = document.getElementById("stamina");
+        const staminaLow = document.getElementById("staminaLow");
+        const warningText = document.getElementById("warningText");
+        const introScreen = document.getElementById("introScreen");
+        const startButton = document.getElementById("startButton");
+        const gameOverScreen = document.getElementById("gameOverScreen");
+        const restartButton = document.getElementById("restartButton");
+        const scoreDisplay = document.getElementById("score");
+        const timerDisplay = document.getElementById("timer");
+        const finalScoreDisplay = document.getElementById("finalScore");
+        const targetContainer = document.getElementById("targetContainer");
+        
+        // Initialize the game
+        function initGame() {
+            // Set up event listeners
+            startButton.addEventListener("click", startGame);
+            restartButton.addEventListener("click", restartGame);
+            
+            // Start with intro screen
+            introScreen.style.display = "flex";
+        }
+        
+        // Start the game
+        function startGame() {
+            introScreen.style.display = "none";
+            gameActive = true;
+            score = 0;
+            timeLeft = 60;
+            stamina = 100;
+            isResting = false;
+            
+            updateScore();
+            updateTimer();
+            updateStaminaBar();
+            
+            // Start game timer
+            clearInterval(gameTimer);
+            gameTimer = setInterval(updateGameTimer, 1000);
+            
+            // Start stamina regeneration
+            startRegen();
+            
+            // Create initial targets
+            createTargets(5);
+        }
+        
+        // Restart the game
+        function restartGame() {
+            gameOverScreen.style.display = "none";
+            startGame();
+        }
+        
+        // Update game timer
+        function updateGameTimer() {
+            timeLeft--;
+            updateTimer();
+            
+            if (timeLeft <= 0) {
+                endGame();
+            }
+        }
+        
+        // Update timer display
+        function updateTimer() {
+            timerDisplay.textContent = timeLeft;
+        }
+        
+        // Update score display
+        function updateScore() {
+            scoreDisplay.textContent = score;
+        }
+        
+        // End the game
+        function endGame() {
+            gameActive = false;
+            clearInterval(gameTimer);
+            clearInterval(regenInterval);
+            
+            // Remove all targets
+            targets.forEach(target => target.remove());
+            targets = [];
+            
+            // Show game over screen
+            finalScoreDisplay.textContent = `Score: ${score}`;
+            gameOverScreen.style.display = "flex";
+        }
+        
+        // Stamina regeneration - SLOWER as requested
+        function startRegen() {
+            clearInterval(regenInterval);
+            regenInterval = setInterval(() => {
+                if (stamina < 100 && !isResting && gameActive) {
+                    stamina += 0.15; // Reduced from 0.3 to 0.15 (50% slower)
+                    updateStaminaBar();
+                }
+            }, 100);
+        }
+        
+        // Update stamina bar display
+        function updateStaminaBar() {
+            staminaBar.style.width = `${stamina}%`;
+            
+            // Change color when low
+            if (stamina < 30) {
+                staminaLow.style.opacity = (30 - stamina) / 30;
+            } else {
+                staminaLow.style.opacity = "0";
+            }
+        }
+        
+        // Create targets
+        function createTargets(count) {
+            for (let i = 0; i < count; i++) {
+                createTarget();
+            }
+        }
+        
+        // Create a single target
+        function createTarget() {
+            const target = document.createElement("div");
+            target.className = "target";
+            
+            // Random position (avoid edges)
+            const x = 50 + Math.random() * (window.innerWidth - 150);
+            const y = 50 + Math.random() * (window.innerHeight - 150);
+            
+            target.style.left = `${x}px`;
+            target.style.top = `${y}px`;
+            
+            // Add click event
+            target.addEventListener("click", () => {
+                if (!gameActive || isResting) return;
+                
+                // Increase score
+                score += 10;
+                updateScore();
+                
+                // Remove target
+                target.remove();
+                targets = targets.filter(t => t !== target);
+                
+                // Create new target
+                createTarget();
+            });
+            
+            targetContainer.appendChild(target);
+            targets.push(target);
+        }
+        
+        // Mouse movement handler
+        document.addEventListener('mousemove', (event) => {
+            if (!gameActive) return;
+            
+            // Calculate movement distance
+            const deltaX = Math.abs(event.clientX - lastMouseX);
+            const deltaY = Math.abs(event.clientY - lastMouseY);
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            
+            // Update last position
+            lastMouseX = event.clientX;
+            lastMouseY = event.clientY;
+            
+            // Drain stamina based on movement distance
+            if (!isResting) {
+                stamina -= distance * 0.03;
+                updateStaminaBar();
+                
+                // Restart regeneration
+                if (stamina < 100) {
+                    startRegen();
+                }
+                
+                // Check if stamina is depleted
+                if (stamina <= 0) {
+                    stamina = 0;
+                    isResting = true;
+                    document.body.style.cursor = 'not-allowed';
+                    warningText.style.display = 'block';
+                    
+                    clearInterval(regenInterval);
+                    
+                    setTimeout(() => {
+                        document.body.style.cursor = 'default';
+                        warningText.style.display = 'none';
+                        stamina = 100;
+                        isResting = false;
+                        updateStaminaBar();
+                        startRegen();
+                    }, 2000);
+                }
+            }
+        });
+        
+        // Initialize the game when page loads
+        window.addEventListener('load', initGame);
+    </script>
+</body>
+</html>
